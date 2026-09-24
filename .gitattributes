@@ -1,0 +1,5 @@
+# Normalize text files to LF, including shell scripts.
+* text=auto eol=lf
+
+# Keep diagram exports binary.
+*.png binary

@@ -1,0 +1,36 @@
+# the Jev API key, see .env.example
+.env
+.env.*
+!.env.example
+
+# local runs
+logs/
+
+# conda environments and model weights, see [tool.depthjev] in pyproject.toml
+envs/
+.venv/
+venv/
+checkpoints/
+
+# third-party checkouts (pinned commits are listed in README.md)
+repos/
+
+# python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.ruff_cache/
+.pytest_cache/
+.mypy_cache/
+.coverage
+.coverage.*
+htmlcov/
+build/
+dist/
+
+# operating system metadata
+.DS_Store
+Thumbs.db
+
+# SVG source files
+*.svg

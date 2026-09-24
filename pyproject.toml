@@ -1,0 +1,55 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "depthjev"
+version = "0.1.0"
+authors = [{ name = "ZJUCQR" }]
+description = "EB-Navigation agent: Depth Anything 3 metric depth + OWLv2 detection -> textual facts -> Jev (TypeSafe System One) action choice, served through EmbodiedBench's model_type=custom interface"
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.11"
+dependencies = [
+  "numpy<2",                    # Depth Anything 3 needs numpy 1.x
+  "pillow",
+  "flask>=3.1,<4",
+  "typesafe-sdk==0.7.1",        # Jev client
+  "transformers==4.57.3",       # OWLv2
+  "opencv-python-headless<5",
+  "addict>=2.4",                # imported by depth_anything_3 but missing from its dependency list
+  "tqdm>=4.66",
+]
+
+[tool.setuptools.packages.find]
+include = ["depthjev*"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+extend-exclude = ["repos", "logs"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP"]
+ignore = ["E501"]
+
+[tool.ruff.lint.per-file-ignores]
+# these two run in the evaluation environment (Python 3.9): no fixes that need 3.10+
+"depthjev/eb_launch.py" = ["UP", "B905"]
+"depthjev/report.py" = ["UP", "B905"]
+
+# ---------------------------------------------------------------------------------------------------
+# DepthJev settings, the only configuration of this repository. The scripts under scripts/ read them
+# through depthjev/config.py, which turns key k into the shell variable DEPTHJEV_<K>. A variable that is
+# already set in the environment wins, e.g. DEPTHJEV_PORT=23400 bash scripts/server.sh. Relative paths
+# are resolved against the repository root and ~ expands to the home directory.
+# ---------------------------------------------------------------------------------------------------
+[tool.depthjev]
+server_env = "envs/depthjev"                            # conda prefix, Python 3.11: this package, Depth Anything 3, OWLv2
+eval_env = "envs/depthjev-eval"                         # conda prefix, Python 3.9: EmbodiedBench, ai2thor 5.0.0
+da3_dir = "checkpoints/DA3METRIC-LARGE"                 # HF depth-anything/DA3METRIC-LARGE
+owlv2_dir = "checkpoints/owlv2-base-patch16-ensemble"   # HF google/owlv2-base-patch16-ensemble
+jev_model = "jev-latest"
+jev_timeout = 20              # seconds per Jev request; the SDK retries twice on top
+port = 23333                  # server port; scripts/run.sh --parallel uses port + slot index
+detection_threshold = 0.1     # OWLv2 score threshold, calibrated on sample frames
