@@ -14,7 +14,7 @@
 
 ## ✨ 亮点
 
-- 📈 **不看图也有竞争力。** Jev 从头到尾不看图像，DepthJev 在 EB-Navigation 全部 300 题上的成功率仍有 46.7%。按 EmbodiedBench 论文报告的结果，这高于 Claude-3.5-Sonnet 的 44.7%，比不看图的 GPT-4o 的 17.4% 高 29 个点。
+- 📈 **有竞争力的表现。** Jev 从头到尾不看图像，DepthJev 在 EB-Navigation 全部 300 题上的成功率仍有 46.7%。按 EmbodiedBench 论文报告的结果，这高于 Claude-3.5-Sonnet 的 44.7%，比不看图的 GPT-4o 的 17.4% 高 29 个点。
 - 📏 **米制感知。** Jev 按米而不是按像素推理距离。五个扇区的可走距离、下一步 0.25 m 的碰撞检查和目标距离，都来自单目米制深度。
 - ⚡ **快。** 单张 H100 上每步 0.76 s，其中 DA3 0.15 s，OWLv2 0.22 s，Jev 0.34 s。
 
@@ -24,7 +24,7 @@
   <img src="assets/how-it-works.png" width="1100" alt="DepthJev 流程：RGB 观测、任务与历史 → 米制深度与目标检测 → 文本事实 → Jev 导航动作 → 下一次观测">
 </p>
 
-1. **感知。** Depth Anything 3 估计米制深度；Jev 从指令确定目标，OWLv2 定位目标物体。
+1. **感知。** Depth Anything 3 估计米制深度；OWLv2 定位目标物体。
 2. **描述。** 将几何信息与动作历史整理成文本事实，描述可走空间、目标距离和移动约束。
 3. **行动。** Jev 读取事实，从八个导航动作中选择下一步，并根据新的观测重复这一过程。
 
@@ -41,7 +41,7 @@ hf download depth-anything/DA3METRIC-LARGE --local-dir checkpoints/DA3METRIC-LAR
 hf download google/owlv2-base-patch16-ensemble --local-dir checkpoints/owlv2-base-patch16-ensemble
 ```
 
-**2. 服务端环境，Python 3.11，GPU**
+**2. 服务端环境**
 
 ```bash
 conda create -y -p envs/depthjev python=3.11 pip
@@ -51,7 +51,7 @@ SETUPTOOLS_SCM_PRETEND_VERSION=0.0.0 pip install -e repos/Depth-Anything-3
 pip install -e .
 ```
 
-**3. 评测端环境，Python 3.9**
+**3. 评测端环境**
 
 ```bash
 conda create -y -p envs/depthjev-eval python=3.9.21 pip
@@ -106,7 +106,7 @@ SERVER_URL=http://127.0.0.1:23333/process bash scripts/eval.sh exp_name=dev eval
 
 ## ⚙️ 配置
 
-配置位于 [pyproject.toml](pyproject.toml) 的 `[tool.depthjev]` 中。
+配置位于 [pyproject.toml](pyproject.toml)。
 
 | 键 | 默认值 |
 |---|---|

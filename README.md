@@ -2,13 +2,15 @@
 
 ![Python 3.11](https://img.shields.io/badge/python-3.11-blue) ![Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-green) ![EB-Navigation success 46.7%](https://img.shields.io/badge/EB--Navigation-46.7%25-orange) ![0.76 s per step](https://img.shields.io/badge/latency-0.76%20s%2Fstep-lightgrey)
 
-**English** | [简体中文](README_zh.md)
+<p align="center">
+  <b>English</b> | <a href="README_zh.md">简体中文</a>
+</p>
 
 🧭 **DepthJev** is a navigation agent for EmbodiedBench EB-Navigation. It bridges the gap between raw visual input and text-based reasoning by converting RGB frames into metric depth via **Depth Anything 3**, detecting targets via **OWLv2**, and translating geometric constraints into short text facts. **Jev** reads these facts to output reliable navigation actions.
 
 ## ✨ Highlights
 
-- 📈 **Competitive without pixels.** DepthJev succeeds in 46.7% of all 300 EB-Navigation episodes.
+- 📈 **Competitive performance.** DepthJev succeeds in 46.7% of all 300 EB-Navigation episodes.
 - 📏 **Metric grounding.** Jev reasons over distances in metres, not pixels. Free space in five sectors, the collision check for the next 0.25 m step and the target distance all come from monocular metric depth.
 - ⚡ **Fast.** A step takes 0.76 s on one H100. DA3 needs 0.15 s, OWLv2 0.22 s and Jev 0.34 s.
 
@@ -18,7 +20,7 @@
 
 ![DepthJev pipeline: RGB observation, task and history → metric depth and target detection → text facts → Jev navigation action → next observation](assets/how-it-works.png)
 
-1. **Perceive.** Depth Anything 3 estimates metric depth; OWLv2 detects the target identified by Jev from the instruction.
+1. **Perceive.** Depth Anything 3 estimates metric depth; OWLv2 detects the target.
 2. **Describe.** Geometry and action history become text facts about free space, target distance and movement constraints.
 3. **Act.** Jev reads these facts, selects one of eight navigation actions, and repeats with the next observation.
 
@@ -35,7 +37,7 @@ hf download depth-anything/DA3METRIC-LARGE --local-dir checkpoints/DA3METRIC-LAR
 hf download google/owlv2-base-patch16-ensemble --local-dir checkpoints/owlv2-base-patch16-ensemble
 ```
 
-**2. Server environment, Python 3.11 on GPU**
+**2. Server environment**
 
 ```bash
 conda create -y -p envs/depthjev python=3.11 pip
@@ -45,7 +47,7 @@ SETUPTOOLS_SCM_PRETEND_VERSION=0.0.0 pip install -e repos/Depth-Anything-3
 pip install -e .
 ```
 
-**3. Evaluation environment, Python 3.9**
+**3. Evaluation environment**
 
 ```bash
 conda create -y -p envs/depthjev-eval python=3.9.21 pip
@@ -102,7 +104,7 @@ The server listens on `127.0.0.1` by default. For an evaluator on another machin
 
 ## ⚙️ Configuration
 
-Settings are defined in [pyproject.toml](pyproject.toml) under `[tool.depthjev]`.
+Settings are defined in [pyproject.toml](pyproject.toml).
 
 
 | Key                           | Default                               |
