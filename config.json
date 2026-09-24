@@ -1,0 +1,10 @@
+{
+  "server_env": "envs/depthjev",
+  "eval_env": "envs/depthjev-eval",
+  "da3_dir": "checkpoints/DA3METRIC-LARGE",
+  "owlv2_dir": "checkpoints/owlv2-base-patch16-ensemble",
+  "jev_model": "jev-latest",
+  "jev_timeout": 20,
+  "port": 23333,
+  "detection_threshold": 0.1
+}

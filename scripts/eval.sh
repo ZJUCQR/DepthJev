@@ -5,7 +5,7 @@
 # Results land in repos/EmbodiedBench/running/eb_nav/depthjev_<exp_name>/<eval_set>/.
 set -euo pipefail
 REPO=$(cd "$(dirname "$0")/.." && pwd)
-CFG=$(cd "$REPO" && "${DEPTHJEV_PYTHON:-python3}" -m depthjev.config) || { echo "cannot read [tool.depthjev] from pyproject.toml; set DEPTHJEV_PYTHON to a Python with tomllib, tomli or pip" >&2; exit 1; }
+CFG=$(cd "$REPO" && "${DEPTHJEV_PYTHON:-python3}" -m depthjev.config) || { echo "cannot read config.json; set DEPTHJEV_PYTHON to a Python 3 interpreter" >&2; exit 1; }
 eval "$CFG"
 SERVER_URL=${SERVER_URL:-http://127.0.0.1:$DEPTHJEV_PORT/process}
 # ai2thor maps CUDA_VISIBLE_DEVICES to a Vulkan device (controller.py, unity_command) and fails without an

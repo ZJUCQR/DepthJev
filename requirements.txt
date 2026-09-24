@@ -1,0 +1,17 @@
+# Server environment: Python 3.11, CUDA 12.8.
+--extra-index-url https://download.pytorch.org/whl/cu128
+
+torch==2.8.0+cu128
+torchvision==0.23.0+cu128
+xformers==0.0.32.post2
+numpy<2
+pillow
+flask>=3.1,<4
+typesafe-sdk==0.7.1
+transformers==4.57.3
+opencv-python<5
+addict>=2.4
+tqdm>=4.66
+
+# Run pip from the repository root after cloning this dependency.
+-e ./repos/Depth-Anything-3

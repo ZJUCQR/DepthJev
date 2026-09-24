@@ -21,7 +21,7 @@
 #   bash scripts/run.sh full --sets all --ratio 1 --parallel       # the same, one subset per GPU
 set -euo pipefail
 REPO=$(cd "$(dirname "$0")/.." && pwd)
-CFG=$(cd "$REPO" && "${DEPTHJEV_PYTHON:-python3}" -m depthjev.config) || { echo "cannot read [tool.depthjev] from pyproject.toml; set DEPTHJEV_PYTHON to a Python with tomllib, tomli or pip" >&2; exit 1; }
+CFG=$(cd "$REPO" && "${DEPTHJEV_PYTHON:-python3}" -m depthjev.config) || { echo "cannot read config.json; set DEPTHJEV_PYTHON to a Python 3 interpreter" >&2; exit 1; }
 eval "$CFG"
 
 ALL_SETS=(base common_sense complex_instruction visual_appearance long_horizon)

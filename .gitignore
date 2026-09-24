@@ -6,13 +6,13 @@
 # local runs
 logs/
 
-# conda environments and model weights, see [tool.depthjev] in pyproject.toml
+# conda environments and model weights, see config.json
 envs/
 .venv/
 venv/
 checkpoints/
 
-# third-party checkouts (pinned commits are listed in README.md)
+# third-party checkouts
 repos/
 
 # python

@@ -32,13 +32,11 @@
 
 所有命令都在仓库根目录执行。
 
-**1. 依赖和权重**
+**1. 克隆依赖仓库**
 
 ```bash
-git clone https://github.com/EmbodiedBench/EmbodiedBench.git repos/EmbodiedBench && git -C repos/EmbodiedBench checkout 9be4e98
-git clone https://github.com/ByteDance-Seed/Depth-Anything-3.git repos/Depth-Anything-3 && git -C repos/Depth-Anything-3 checkout 3d835ec
-hf download depth-anything/DA3METRIC-LARGE --local-dir checkpoints/DA3METRIC-LARGE
-hf download google/owlv2-base-patch16-ensemble --local-dir checkpoints/owlv2-base-patch16-ensemble
+git clone https://github.com/EmbodiedBench/EmbodiedBench.git repos/EmbodiedBench
+git clone https://github.com/ByteDance-Seed/Depth-Anything-3.git repos/Depth-Anything-3
 ```
 
 **2. 服务端环境**
@@ -46,9 +44,9 @@ hf download google/owlv2-base-patch16-ensemble --local-dir checkpoints/owlv2-bas
 ```bash
 conda create -y -p envs/depthjev python=3.11 pip
 conda activate ./envs/depthjev
-pip install torch==2.8.0 torchvision==0.23.0 xformers==0.0.32.post2 --index-url https://download.pytorch.org/whl/cu128
-SETUPTOOLS_SCM_PRETEND_VERSION=0.0.0 pip install -e repos/Depth-Anything-3
-pip install -e .
+pip install -r requirements.txt
+hf download depth-anything/DA3METRIC-LARGE --local-dir checkpoints/DA3METRIC-LARGE
+hf download google/owlv2-base-patch16-ensemble --local-dir checkpoints/owlv2-base-patch16-ensemble
 ```
 
 **3. 评测端环境**
@@ -56,12 +54,7 @@ pip install -e .
 ```bash
 conda create -y -p envs/depthjev-eval python=3.9.21 pip
 conda activate ./envs/depthjev-eval
-pip install torch==2.5.1 torchvision==0.20.1 --index-url https://download.pytorch.org/whl/cpu
-pip install gym==0.26.2 numpy==1.26.4 opencv-python-headless==4.10.0.84 pillow==10.4.0 requests==2.32.3 \
-    hydra-core==1.3.2 omegaconf==2.3.0 pyyaml==6.0.2 tqdm==4.67.1 openai==1.58.1 anthropic==0.43.1 \
-    google-generativeai==0.8.3 pydantic==2.10.5 python-xlib==0.33 progressbar2==4.5.0 botocore==1.35.90 \
-    aws-requests-auth==0.4.3 msgpack==1.1.0 flask==3.1.0 werkzeug==3.1.3 matplotlib==3.9.4
-pip install --no-deps ai2thor==5.0.0
+pip install -r requirements-eval.txt
 ```
 
 **4. AI2-THOR 无头渲染**
@@ -106,7 +99,7 @@ SERVER_URL=http://127.0.0.1:23333/process bash scripts/eval.sh exp_name=dev eval
 
 ## ⚙️ 配置
 
-配置位于 [pyproject.toml](pyproject.toml)。
+配置位于 [config.json](config.json)。
 
 | 键 | 默认值 |
 |---|---|
@@ -230,7 +223,7 @@ depthjev/
 ├── facts.py          # Jev 读的状态、移动检查、搜索状态
 ├── jev_client.py     # 三个 Jev Choice、规则、iTHOR 类型表、检测别名
 ├── actions.py        # EB-Navigation 的 8 个动作
-├── config.py         # [tool.depthjev] → shell 变量
+├── config.py         # config.json → shell 变量
 ├── eb_launch.py      # 在评测环境里启动 EmbodiedBench
 └── report.py         # 延迟、成功率和逐回合表
 scripts/

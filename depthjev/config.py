@@ -1,23 +1,16 @@
-"""Print the [tool.depthjev] settings of pyproject.toml as shell code, for eval "$(python3 -m depthjev.config)" run from the repo root.
+"""Print config.json settings as shell code for the launch scripts.
 
-Key k becomes the exported variable DEPTHJEV_<K>; a variable already set in the environment keeps its value. Path settings, the keys ending in _env, _dir or _file, are made absolute: ~ expands to the home directory and relative paths are taken from the repository root. Works with Python 3.11+ (tomllib) and with older Python 3 interpreters that have tomli or pip, which vendors tomli.
+Key k becomes the exported variable DEPTHJEV_<K>; a variable already set in the environment keeps its value. Path settings, the keys ending in _env, _dir or _file, are made absolute: ~ expands to the home directory and relative paths are taken from the repository root. Uses only the standard library and works in both Python environments.
 """
 
 from __future__ import annotations
 
+import json
 import shlex
 from pathlib import Path
 
-try:
-    import tomllib
-except ImportError:
-    try:
-        import tomli as tomllib
-    except ImportError:
-        from pip._vendor import tomli as tomllib
-
 REPO = Path(__file__).resolve().parents[1]
-PYPROJECT = REPO / "pyproject.toml"
+CONFIG = REPO / "config.json"
 PATH_SUFFIXES = ("_env", "_dir", "_file")
 
 
@@ -32,8 +25,8 @@ def shell_lines(settings: dict) -> list[str]:
 
 
 def main():
-    with open(PYPROJECT, "rb") as f:
-        settings = tomllib.load(f)["tool"]["depthjev"]
+    with open(CONFIG, encoding="utf-8") as f:
+        settings = json.load(f)
     print("\n".join(shell_lines(settings)))
 
 
