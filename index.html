@@ -72,15 +72,11 @@ nav .wrap { display: flex; align-items: center; justify-content: space-between; 
     linear-gradient(to bottom, transparent 60%, var(--bg));
 }
 .hero .wrap { position: relative; z-index: 1; }
-.pill {
-  display: inline-flex; gap: 8px; align-items: center; font-size: 13px; color: var(--muted);
-  padding: 6px 14px; border-radius: 999px; border: 1px solid var(--border); background: var(--card);
-}
-.pill b { color: var(--ok); font-weight: 600; }
 h1 {
   font-size: clamp(44px, 9vw, 92px); font-weight: 800; letter-spacing: -.045em; line-height: 1.02;
-  margin: 26px 0 18px;
+  margin: 0 0 14px;
 }
+.tagline { font-size: clamp(22px, 3.4vw, 34px); font-weight: 700; letter-spacing: -.02em; line-height: 1.25; margin-bottom: 18px; }
 .grad { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
 .sub { font-size: clamp(18px, 2.4vw, 23px); color: var(--muted); max-width: 720px; margin: 0 auto; }
 .sub em { color: var(--text); font-style: normal; font-weight: 600; }
@@ -240,8 +236,8 @@ footer .wrap { display: flex; justify-content: space-between; gap: 16px; flex-wr
 <header class="hero" id="top">
   <canvas id="field"></canvas>
   <div class="wrap">
-    <span class="pill">EmbodiedBench · EB-Navigation · <b>140 / 300 solved</b></span>
-    <h1>Turning <span class="grad">Depth</span><br>into Text</h1>
+    <h1><span class="grad">DepthJev</span></h1>
+    <p class="tagline">Turning Depth into Text for Embodied Navigation</p>
     <p class="sub">DepthJev converts every RGB frame into metric depth and target detections, then writes them as short text facts.</p>
     <div class="cta">
       <a class="btn primary" href="https://github.com/ZJUCQR/DepthJev">
