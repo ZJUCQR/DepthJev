@@ -5,6 +5,7 @@
 <h3>将深度感知转化为文本的具身导航</h3>
 
 <p>
+  <a href="https://zjucqr.github.io/DepthJev/"><img src="https://img.shields.io/badge/project-page-0ea5e9?logo=githubpages&logoColor=white" alt="Project page"></a>
   <a href="https://github.com/ZJUCQR/DepthJev/actions/workflows/lint.yml"><img src="https://github.com/ZJUCQR/DepthJev/actions/workflows/lint.yml/badge.svg" alt="lint"></a>
   <img src="https://img.shields.io/badge/python-3.11-3776AB?logo=python&logoColor=white" alt="Python 3.11">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-green" alt="Apache-2.0"></a>
@@ -34,7 +35,6 @@
 - 📈 **不看图也能打。** EB-Navigation 全部 300 题成功率 46.7%。按 EmbodiedBench 论文的结果，高于 Claude-3.5-Sonnet 的 44.7%，比不看图的 GPT-4o（17.4%）高 29 个点。
 - 📏 **米制感知。** 五个扇区的可走距离、下一步 0.25 m 的碰撞检查和目标距离都来自单目米制深度，Jev 按米而不是按像素推理。
 - ⚡ **快。** 单张 H100 上每步 0.76 s，其中 DA3 0.15 s，OWLv2 0.22 s，Jev 0.34 s。
-- 🔌 **即插即用。** 作为 EmbodiedBench 的 `custom` 模型服务运行，一个脚本拉起服务、模拟器并输出报告。
 
 ### 🏆 横向对比
 
@@ -61,7 +61,7 @@
 <details>
 <summary><b>Jev 选择动作前读到了什么</b></summary>
 
-取自 `base` 第 21 题第 0 步的部分字段，目标为 **GarbageCan**：
+一个例子：
 
 ```json
 {
@@ -101,12 +101,10 @@
 ```bash
 git clone https://github.com/ZJUCQR/DepthJev.git && cd DepthJev
 git clone https://github.com/EmbodiedBench/EmbodiedBench.git repos/EmbodiedBench
-git -C repos/EmbodiedBench checkout 9be4e98
 git clone https://github.com/ByteDance-Seed/Depth-Anything-3.git repos/Depth-Anything-3
-git -C repos/Depth-Anything-3 checkout 3d835ec
 ```
 
-**2. 服务端环境**（Python 3.11，CUDA 12.8）
+**2. 服务端环境**
 
 ```bash
 conda create -y -p envs/depthjev python=3.11 pip
@@ -116,7 +114,7 @@ hf download depth-anything/DA3METRIC-LARGE --local-dir checkpoints/DA3METRIC-LAR
 hf download google/owlv2-base-patch16-ensemble --local-dir checkpoints/owlv2-base-patch16-ensemble
 ```
 
-**3. 评测端环境**（Python 3.9，CPU）
+**3. 评测端环境**
 
 ```bash
 conda create -y -p envs/depthjev-eval python=3.9.21 pip

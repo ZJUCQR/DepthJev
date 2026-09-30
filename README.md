@@ -5,6 +5,7 @@
 <h3>Turning Depth into Text for Embodied Navigation</h3>
 
 <p>
+  <a href="https://zjucqr.github.io/DepthJev/"><img src="https://img.shields.io/badge/project-page-0ea5e9?logo=githubpages&logoColor=white" alt="Project page"></a>
   <a href="https://github.com/ZJUCQR/DepthJev/actions/workflows/lint.yml"><img src="https://github.com/ZJUCQR/DepthJev/actions/workflows/lint.yml/badge.svg" alt="lint"></a>
   <img src="https://img.shields.io/badge/python-3.11-3776AB?logo=python&logoColor=white" alt="Python 3.11">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-green" alt="Apache-2.0"></a>
@@ -34,7 +35,6 @@
 - 📈 **Strong without pixels.** 46.7% success on all 300 EB-Navigation episodes, above Claude-3.5-Sonnet (44.7%) and 29 points above text-only GPT-4o (17.4%) as reported by EmbodiedBench.
 - 📏 **Metric grounding.** Free space in five sectors, a collision check for the next 0.25 m step and the target distance all come from monocular metric depth, so Jev reasons in metres, not pixels.
 - ⚡ **Fast.** 0.76 s per step on one H100: DA3 0.15 s, OWLv2 0.22 s, Jev 0.34 s.
-- 🔌 **Drop-in.** Runs as an EmbodiedBench `custom` model server; one script launches the server, the simulator and the report.
 
 ### 🏆 Where it stands
 
@@ -61,7 +61,7 @@
 <details>
 <summary><b>What Jev reads before an action</b></summary>
 
-Selected fields from step 0 of `base` task 21, target **GarbageCan**:
+An example:
 
 ```json
 {
@@ -101,12 +101,10 @@ All commands run from the repository root.
 ```bash
 git clone https://github.com/ZJUCQR/DepthJev.git && cd DepthJev
 git clone https://github.com/EmbodiedBench/EmbodiedBench.git repos/EmbodiedBench
-git -C repos/EmbodiedBench checkout 9be4e98
 git clone https://github.com/ByteDance-Seed/Depth-Anything-3.git repos/Depth-Anything-3
-git -C repos/Depth-Anything-3 checkout 3d835ec
 ```
 
-**2. Server environment** (Python 3.11, CUDA 12.8)
+**2. Server environment**
 
 ```bash
 conda create -y -p envs/depthjev python=3.11 pip
@@ -116,7 +114,7 @@ hf download depth-anything/DA3METRIC-LARGE --local-dir checkpoints/DA3METRIC-LAR
 hf download google/owlv2-base-patch16-ensemble --local-dir checkpoints/owlv2-base-patch16-ensemble
 ```
 
-**3. Evaluation environment** (Python 3.9, CPU)
+**3. Evaluation environment**
 
 ```bash
 conda create -y -p envs/depthjev-eval python=3.9.21 pip
