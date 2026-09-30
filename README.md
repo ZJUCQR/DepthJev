@@ -11,7 +11,6 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-green" alt="Apache-2.0"></a>
   <img src="https://img.shields.io/badge/EB--Navigation-46.7%25-orange" alt="EB-Navigation success 46.7%">
   <img src="https://img.shields.io/badge/latency-0.76%20s%2Fstep-blueviolet" alt="0.76 s per step">
-  <a href="https://github.com/ZJUCQR/DepthJev/stargazers"><img src="https://img.shields.io/github/stars/ZJUCQR/DepthJev?style=social" alt="GitHub stars"></a>
 </p>
 
 <p>
@@ -58,21 +57,35 @@
 2. **📝 Describe.** Geometry and action history become text facts about free space, target distance and movement constraints.
 3. **🎯 Act.** Jev reads the facts, selects one of eight navigation actions, and the loop repeats with the next observation.
 
-<details>
-<summary><b>What Jev reads before an action</b></summary>
+### 🍝 Example
 
-An example:
+“*I need a vessel to boil pasta for dinner. Can you navigate to that object and stay close?*” DepthJev resolves the target to **Pot** and reaches it in 9 steps. Boxes are OWLv2 detections, distances come from DA3.
+
+<p align="center"><img src="assets/example-pot.jpg" width="100%" alt="DepthJev reaching a pot in 9 steps: frames of steps 0, 3, 6, 7 and 8 with the detected pot and its distance"></p>
+
+<details>
+<summary><b>What Jev reads at step 0</b></summary>
 
 ```json
 {
-  "task": {"target_object": "garbage can", "step": 1, "steps_left": 20},
-  "target": {"visible": true, "sector": "right", "distance": "1 to 2 m"},
+  "task": {
+    "instruction": "I need a vessel to boil pasta for dinner. Can you navigate to that object and stay close?",
+    "target_object": "pot",
+    "success_rule": "the episode succeeds as soon as the robot stands within 1 m of the target object",
+    "step": 1,
+    "steps_left": 20
+  },
+  "target": {
+    "visible": true,
+    "sector": "center",
+    "distance": "over 2 m"
+  },
   "free_distance_ahead_by_sector": {
     "far_left": "1 to 2 m",
-    "left": "1 to 2 m",
+    "left": "over 2 m",
     "center": "over 2 m",
-    "right": "0.5 to 1 m",
-    "far_right": "0.5 to 1 m"
+    "right": "1 to 2 m",
+    "far_right": "under 0.5 m"
   },
   "move_check": {
     "move_ahead": "clear",
@@ -86,7 +99,7 @@ An example:
 }
 ```
 
-**Decision:** `move_ahead` · probability 0.95 · 1,513 input tokens · 0.22 s.
+**Decision:** `move_ahead` · probability 1.00 · 1,491 input tokens · 0.37 s.
 
 </details>
 
@@ -203,21 +216,6 @@ Mean, p50 and p90 are for one run; the last column shows three runs sharing one 
 | **Whole step** | **0.76** | **0.64** | **1.04** | **1.06** |
 
 With AI2-THOR software rendering, a single run averages about 21 s per episode.
-
-</details>
-
-<details>
-<summary><b>✅ Successful episode: reaching a pot in 9 steps</b></summary>
-
-In a `common_sense` task, "I need a vessel to boil pasta for dinner" resolves to **Pot**. Selected steps:
-
-```text
-s0 vis=T center d=2.70 fwd=clear -> move_ahead p=1.00
-s4 vis=T center d=1.72 fwd=clear -> move_ahead p=1.00
-s5 vis=T left   d=1.47 fwd=clear -> move_ahead p=0.91
-s7 vis=T left   d=0.89 fwd=clear -> move_left  p=0.67
-s8 vis=T center d=0.84 fwd=clear -> move_ahead p=1.00   (success)
-```
 
 </details>
 

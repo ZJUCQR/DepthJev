@@ -11,7 +11,6 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-green" alt="Apache-2.0"></a>
   <img src="https://img.shields.io/badge/EB--Navigation-46.7%25-orange" alt="EB-Navigation 成功率 46.7%">
   <img src="https://img.shields.io/badge/latency-0.76%20s%2Fstep-blueviolet" alt="每步 0.76 s">
-  <a href="https://github.com/ZJUCQR/DepthJev/stargazers"><img src="https://img.shields.io/github/stars/ZJUCQR/DepthJev?style=social" alt="GitHub stars"></a>
 </p>
 
 <p>
@@ -58,21 +57,35 @@
 2. **📝 描述。** 几何信息和动作历史整理成文本事实，描述可走空间、目标距离和移动约束。
 3. **🎯 行动。** Jev 读取事实，从八个导航动作中选一个，再根据新观测重复。
 
-<details>
-<summary><b>Jev 选择动作前读到了什么</b></summary>
+### 🍝 示例
 
-一个例子：
+“*I need a vessel to boil pasta for dinner. Can you navigate to that object and stay close?*” DepthJev 把目标解析为 **Pot**，9 步到达。框是 OWLv2 的检测结果，距离来自 DA3。
+
+<p align="center"><img src="assets/example-pot.jpg" width="100%" alt="DepthJev 9 步到达锅具：第 0、3、6、7、8 步画面，标出检测到的锅和距离"></p>
+
+<details>
+<summary><b>第 0 步 Jev 读到的内容</b></summary>
 
 ```json
 {
-  "task": {"target_object": "garbage can", "step": 1, "steps_left": 20},
-  "target": {"visible": true, "sector": "right", "distance": "1 to 2 m"},
+  "task": {
+    "instruction": "I need a vessel to boil pasta for dinner. Can you navigate to that object and stay close?",
+    "target_object": "pot",
+    "success_rule": "the episode succeeds as soon as the robot stands within 1 m of the target object",
+    "step": 1,
+    "steps_left": 20
+  },
+  "target": {
+    "visible": true,
+    "sector": "center",
+    "distance": "over 2 m"
+  },
   "free_distance_ahead_by_sector": {
     "far_left": "1 to 2 m",
-    "left": "1 to 2 m",
+    "left": "over 2 m",
     "center": "over 2 m",
-    "right": "0.5 to 1 m",
-    "far_right": "0.5 to 1 m"
+    "right": "1 to 2 m",
+    "far_right": "under 0.5 m"
   },
   "move_check": {
     "move_ahead": "clear",
@@ -86,7 +99,7 @@
 }
 ```
 
-**决策：** `move_ahead` · 概率 0.95 · 1,513 个输入 token · 0.22 秒。
+**决策：** `move_ahead` · 概率 1.00 · 1,491 个输入 token · 0.37 秒。
 
 </details>
 
@@ -203,21 +216,6 @@ SERVER_URL=http://127.0.0.1:23333/process bash scripts/eval.sh exp_name=dev eval
 | **一步合计** | **0.76** | **0.64** | **1.04** | **1.06** |
 
 包含 AI2-THOR 软件渲染时，单路运行平均每回合约 21 秒。
-
-</details>
-
-<details>
-<summary><b>✅ 成功示例：9 步到达锅具</b></summary>
-
-在一个 `common_sense` 任务中，"I need a vessel to boil pasta for dinner" 被解析为 **Pot**。部分步骤如下：
-
-```text
-s0 vis=T center d=2.70 fwd=clear -> move_ahead p=1.00
-s4 vis=T center d=1.72 fwd=clear -> move_ahead p=1.00
-s5 vis=T left   d=1.47 fwd=clear -> move_ahead p=0.91
-s7 vis=T left   d=0.89 fwd=clear -> move_left  p=0.67
-s8 vis=T center d=0.84 fwd=clear -> move_ahead p=1.00   (成功)
-```
 
 </details>
 
