@@ -14,9 +14,11 @@
 </p>
 
 <p>
+  <a href="https://zjucqr.github.io/DepthJev/"><b>项目主页</b></a> ·
   <a href="#how-it-works">工作原理</a> ·
   <a href="#getting-started">快速开始</a> ·
-  <a href="#results">实验结果</a>
+  <a href="#results">实验结果</a> ·
+  <a href="#citation">引用</a>
 </p>
 
 <p><a href="README.md">English</a> | <b>简体中文</b></p>
@@ -31,31 +33,36 @@
 
 ## ✨ 亮点
 
-- 📈 **不看图也能打。** EB-Navigation 全部 300 题成功率 46.7%。按 EmbodiedBench 论文的结果，高于 Claude-3.5-Sonnet 的 44.7%，比不看图的 GPT-4o（17.4%）高 29 个点。
+- 📈 **不看图也能打。** EB-Navigation 全部 300 题成功率 46.7%。按 EmbodiedBench 论文的结果，高于 Claude-3.5-Sonnet 的 44.7%，比不看图的 GPT-4o（17.4%）高 29.3 个点。
+- 🧭 **长程任务稳得住。** `long_horizon` 子集 41.7%，仅次于 GPT-4o（55.0%）；Claude-3.5-Sonnet 为 26.7%，Gemini-2.0-flash 为 13.3%。
 - 📏 **米制感知。** 五个扇区的可走距离、下一步 0.25 m 的碰撞检查和目标距离都来自单目米制深度，Jev 按米而不是按像素推理。
 - ⚡ **快。** 单张 H100 上每步 0.76 s，其中 DA3 0.15 s，OWLv2 0.22 s，Jev 0.34 s。
 
 ### 🏆 横向对比
 
-| 智能体 | 决策模型的输入 | EB-Navigation 成功率 |
-| --- | --- | :---: |
-| GPT-4o | 图像 + 文本 | 57.7 |
-| Gemini-2.0-flash | 图像 + 文本 | 48.7 |
-| **DepthJev（本项目）** | **仅文本事实** | **46.7** |
-| Claude-3.5-Sonnet | 图像 + 文本 | 44.7 |
-| InternVL2.5-78B | 图像 + 文本 | 30.7 |
-| Qwen2-VL-72B | 图像 + 文本 | 21.2 |
-| GPT-4o | 仅文本 | 17.4 |
+EB-Navigation 成功率（%）。DepthJev 的决策模型只读文本；除纯文本 GPT-4o 外，其余基线都能看到图像。
 
-<sub>基线数字取自 EmbodiedBench 论文表 3。</sub>
+| 智能体 | 决策模型的输入 | 平均 | Base | Common | Complex | Visual | Long |
+| --- | --- | :---: | :---: | :---: | :---: | :---: | :---: |
+| GPT-4o | 图像 + 文本 | **57.7** | 55.0 | 60.0 | **58.3** | **60.0** | **55.0** |
+| Gemini-2.0-flash | 图像 + 文本 | 48.7 | 63.3 | **65.0** | 50.0 | 51.7 | 13.3 |
+| **DepthJev（本项目）** | **仅文本事实** | **46.7** | **53.3** | **51.7** | **50.0** | **36.7** | **41.7** |
+| Claude-3.5-Sonnet | 图像 + 文本 | 44.7 | **66.7** | 51.7 | 41.7 | 36.7 | 26.7 |
+| InternVL2.5-78B | 图像 + 文本 | 30.7 | 36.7 | 38.3 | 33.3 | 21.7 | 23.3 |
+| Qwen2-VL-72B | 图像 + 文本 | 21.2 | 26.7 | 30.0 | 28.3 | 16.0 | 5.0 |
+| GPT-4o | 仅文本 | 17.4 | 21.7 | 21.7 | 26.7 | 16.7 | 0.0 |
+
+<sub>基线数字取自 EmbodiedBench 论文表 3；加粗为 DepthJev 和每列最好的基线。<a href="https://zjucqr.github.io/DepthJev/">项目主页</a>列出了全部 15 个模型。</sub>
 
 <a id="how-it-works"></a>
 
 ## 🏗️ 工作原理
 
-1. **👁️ 感知。** Depth Anything 3 估计米制深度；OWLv2 定位目标。
-2. **📝 描述。** 几何信息和动作历史整理成文本事实，描述可走空间、目标距离和移动约束。
-3. **🎯 行动。** Jev 读取事实，从八个导航动作中选一个，再根据新观测重复。
+每一步分三个阶段，每个阶段对应 [`depthjev/`](depthjev) 下的一个子包：
+
+1. **👁️ 感知**（[`perception/`](depthjev/perception)）。Depth Anything 3 估计米制深度；OWLv2 定位目标。深度图经反投影、按地面校平后切成五个扇区。
+2. **📝 描述**（[`language/`](depthjev/language)）。可走空间、目标距离和动作历史整理成文本事实，距离分为四档：under 0.5 m、0.5 to 1 m、1 to 2 m 和 over 2 m。
+3. **🎯 行动**（[`decision/`](depthjev/decision)）。Jev 读取事实，从八个导航动作中选一个，再根据新观测重复。
 
 ### 🍝 示例
 
@@ -107,15 +114,15 @@
 
 ## 🚀 快速开始
 
-所有命令都在仓库根目录执行。
+DepthJev 用两个 Python 环境：**服务端**（Python 3.11，一张 GPU）跑模型，**评测端**（Python 3.9，CPU）跑 EmbodiedBench 和 AI2-THOR。所有命令都在仓库根目录执行。
 
-**1. 克隆本仓库和依赖仓库**
+**1. 克隆仓库及锁定版本的依赖**
 
 ```bash
-git clone https://github.com/ZJUCQR/DepthJev.git && cd DepthJev
-git clone https://github.com/EmbodiedBench/EmbodiedBench.git repos/EmbodiedBench
-git clone https://github.com/ByteDance-Seed/Depth-Anything-3.git repos/Depth-Anything-3
+git clone --recursive https://github.com/ZJUCQR/DepthJev.git && cd DepthJev
 ```
+
+EmbodiedBench 和 Depth Anything 3 是 `third_party/` 下的 git 子模块，锁定在复现结果所用的提交上。已经克隆过的仓库执行 `git submodule update --init`。
 
 **2. 服务端环境**
 
@@ -132,8 +139,10 @@ hf download google/owlv2-base-patch16-ensemble --local-dir checkpoints/owlv2-bas
 ```bash
 conda create -y -p envs/depthjev-eval python=3.9.21 pip
 conda activate ./envs/depthjev-eval
-pip install -r requirements-eval.txt
+pip install -r requirements.txt
 ```
+
+两个环境共用同一个 `requirements.txt`，由环境标记按 Python 版本选择各自的依赖。
 
 **4. AI2-THOR 无头渲染**
 
@@ -164,6 +173,8 @@ bash scripts/run.sh full --sets all --ratio 1 --parallel  # 每个子集一个�
 | `--gpus` | 可见的 GPU | 服务用的 CUDA 设备 |
 | `--parallel` | 关 | 每个子集一个服务 + 一个评测 |
 
+运行结束时会打印报告；之后可以用 `python -m depthjev.evaluation.report RUN_NAME --ratio R` 再次查看。
+
 <details>
 <summary><b>服务和评测分两个终端跑</b></summary>
 
@@ -178,14 +189,16 @@ SERVER_URL=http://127.0.0.1:23333/process bash scripts/eval.sh exp_name=dev eval
 
 ## ⚙️ 配置
 
-所有配置都在 [config.json](config.json)。
+仓库没有配置文件。服务端设置都是 `python -m depthjev.server` 的命令行参数（见 `bash scripts/server.sh --help`），每个参数也可以用环境变量设置：`--jev-model` 对应 `DEPTHJEV_JEV_MODEL`，其余依此类推。
 
-| 键 | 默认值 |
+| 参数 | 默认值 |
 | --- | --- |
-| `server_env`, `eval_env` | `envs/depthjev`, `envs/depthjev-eval` |
-| `da3_dir`, `owlv2_dir` | `checkpoints/...` |
-| `jev_model`, `jev_timeout` | `jev-latest`, `20` |
-| `port`, `detection_threshold` | `23333`, `0.1` |
+| `--da3-dir`、`--owlv2-dir` | `checkpoints/DA3METRIC-LARGE`、`checkpoints/owlv2-base-patch16-ensemble` |
+| `--jev-model`、`--jev-timeout` | `jev-latest`、`20` |
+| `--detection-threshold` | `0.1` |
+| `--host`、`--port` | `127.0.0.1`、`23333` |
+
+脚本还会读取 `DEPTHJEV_SERVER_ENV` 和 `DEPTHJEV_EVAL_ENV` 这两个环境路径（默认 `envs/depthjev` 和 `envs/depthjev-eval`），以及 `DEPTHJEV_PORT`。
 
 <a id="results"></a>
 
@@ -239,23 +252,48 @@ SERVER_URL=http://127.0.0.1:23333/process bash scripts/eval.sh exp_name=dev eval
 ## 📁 项目结构
 
 ```
-depthjev/
-├── server.py         # Flask /process + /health，每个请求写一行 JSONL
-├── policy.py         # 一步：解析 → 深度 → 检测 → 事实 → Jev → EmbodiedBench JSON
-├── prompt_parse.py   # 从 EmbodiedBench 的 prompt 里取指令和动作历史
-├── depth.py          # DA3METRIC-LARGE → 米制深度
-├── detect.py         # OWLv2 目标检测
-├── geometry.py       # 反投影、地面估计、扇区距离、前进碰撞
-├── facts.py          # Jev 读的状态、移动检查、搜索状态
-├── jev_client.py     # 三个 Jev Choice、规则、iTHOR 类型表、检测别名
-├── actions.py        # EB-Navigation 的 8 个动作
-├── config.py         # config.json → shell 变量
-├── eb_launch.py      # 在评测环境里启动 EmbodiedBench
-└── report.py         # 延迟、成功率和逐回合表
-scripts/
-├── run.sh            # 端到端评测，单路或 --parallel
-├── server.sh         # 只起服务
-└── eval.sh           # 只跑评测
+DepthJev/
+├── depthjev/                # 智能体：每个子包对应一步中的一个阶段
+│   ├── perception/          # 👁️ 画面变成米制量
+│   │   ├── depth.py         #    Depth Anything 3 米制深度
+│   │   ├── detection.py     #    OWLv2 开放词表检测
+│   │   └── geometry.py      #    反投影、地面估计、各扇区可走距离、前进碰撞、目标距离
+│   ├── language/            # 📝 米制量和历史变成 Jev 读的文本
+│   │   ├── prompt.py        #    从 EmbodiedBench 的 prompt 里取指令和动作历史
+│   │   ├── facts.py         #    距离分档、移动检查、搜索状态、JSON 状态
+│   │   ├── actions.py       #    EB-Navigation 的 8 个动作
+│   │   └── objects.py       #    125 个 iTHOR 物体类型和检测别名
+│   ├── decision/            # 🎯 文本变成动作
+│   │   ├── jev.py           #    Jev 客户端和三个问题
+│   │   └── policy.py        #    一步：解析 → 深度 → 检测 → 事实 → Jev → 回复
+│   ├── server.py            # Flask /process 和 /health，每个请求写一行 JSON
+│   └── evaluation/          # 在 Python 3.9 评测环境里运行
+│       ├── launch.py        #    启动 EmbodiedBench 并连到服务
+│       └── report.py        #    延迟、成功率和逐回合表
+├── scripts/
+│   ├── run.sh               # 端到端：服务、评测和报告，单路或 --parallel
+│   ├── server.sh            # 只起服务
+│   └── eval.sh              # 只跑评测
+├── third_party/             # git 子模块：EmbodiedBench、Depth-Anything-3
+├── assets/                  # README 用图
+└── requirements.txt         # 两个环境共用，按 Python 版本选择
+```
+
+安装和运行会生成 `envs/`、`checkpoints/` 和 `logs/`，它们都在 git 忽略列表里。
+
+<a id="citation"></a>
+
+## 📝 引用
+
+如果 DepthJev 对你的研究有帮助，请引用：
+
+```bibtex
+@misc{depthjev2026,
+  title        = {DepthJev: Turning Depth into Text for Embodied Navigation},
+  author       = {ZJUCQR},
+  year         = {2026},
+  howpublished = {\url{https://github.com/ZJUCQR/DepthJev}}
+}
 ```
 
 ## 🙏 致谢

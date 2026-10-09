@@ -11,11 +11,20 @@ from dataclasses import dataclass
 
 from PIL import Image
 
-from depthjev.actions import BY_KEY, Action
-from depthjev.facts import CLEAR, StepFacts, TargetObservation, move_checks, search_status, sidestep_oscillation
-from depthjev.geometry import FOV_DEG, analyze_depth, distance_bin, sector_of_column
-from depthjev.jev_client import JevClient, JevError, detector_queries, display_name
-from depthjev.prompt_parse import ParsedPrompt, PromptParseError, parse_prompt
+from depthjev.decision.jev import JevClient, JevError
+from depthjev.language.actions import BY_KEY, Action
+from depthjev.language.facts import (
+    CLEAR,
+    StepFacts,
+    TargetObservation,
+    distance_bin,
+    move_checks,
+    search_status,
+    sidestep_oscillation,
+)
+from depthjev.language.objects import detector_queries, display_name
+from depthjev.language.prompt import ParsedPrompt, PromptParseError, parse_prompt
+from depthjev.perception.geometry import FOV_DEG, analyze_depth, sector_of_column
 
 FALLBACK_ROTATE = BY_KEY["rotate_right"]
 

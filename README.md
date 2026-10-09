@@ -14,9 +14,11 @@
 </p>
 
 <p>
+  <a href="https://zjucqr.github.io/DepthJev/"><b>Project page</b></a> ·
   <a href="#how-it-works">How it works</a> ·
-  <a href="#getting-started">Getting Started</a> ·
-  <a href="#results">Results</a>
+  <a href="#getting-started">Getting started</a> ·
+  <a href="#results">Results</a> ·
+  <a href="#citation">Citation</a>
 </p>
 
 <p><b>English</b> | <a href="README_zh.md">简体中文</a></p>
@@ -31,31 +33,36 @@
 
 ## ✨ Highlights
 
-- 📈 **Strong without pixels.** 46.7% success on all 300 EB-Navigation episodes, above Claude-3.5-Sonnet (44.7%) and 29 points above text-only GPT-4o (17.4%) as reported by EmbodiedBench.
+- 📈 **Strong without pixels.** 46.7% success on all 300 EB-Navigation episodes, above Claude-3.5-Sonnet (44.7%) and 29.3 points above text-only GPT-4o (17.4%) as reported by EmbodiedBench.
+- 🧭 **Holds up on long horizons.** 41.7% on `long_horizon`, second only to GPT-4o (55.0%); Claude-3.5-Sonnet reaches 26.7% and Gemini-2.0-flash 13.3%.
 - 📏 **Metric grounding.** Free space in five sectors, a collision check for the next 0.25 m step and the target distance all come from monocular metric depth, so Jev reasons in metres, not pixels.
 - ⚡ **Fast.** 0.76 s per step on one H100: DA3 0.15 s, OWLv2 0.22 s, Jev 0.34 s.
 
 ### 🏆 Where it stands
 
-| Agent | Input to the decision model | EB-Navigation success |
-| --- | --- | :---: |
-| GPT-4o | image + text | 57.7 |
-| Gemini-2.0-flash | image + text | 48.7 |
-| **DepthJev (ours)** | **text facts only** | **46.7** |
-| Claude-3.5-Sonnet | image + text | 44.7 |
-| InternVL2.5-78B | image + text | 30.7 |
-| Qwen2-VL-72B | image + text | 21.2 |
-| GPT-4o | text only | 17.4 |
+Success rate (%) on EB-Navigation. DepthJev's decision model reads only text; every baseline except text-only GPT-4o also sees the image.
 
-<sub>Baselines are from Table 3 of the EmbodiedBench paper.</sub>
+| Agent | Decision model reads | Avg | Base | Common | Complex | Visual | Long |
+| --- | --- | :---: | :---: | :---: | :---: | :---: | :---: |
+| GPT-4o | image + text | **57.7** | 55.0 | 60.0 | **58.3** | **60.0** | **55.0** |
+| Gemini-2.0-flash | image + text | 48.7 | 63.3 | **65.0** | 50.0 | 51.7 | 13.3 |
+| **DepthJev (ours)** | **text facts only** | **46.7** | **53.3** | **51.7** | **50.0** | **36.7** | **41.7** |
+| Claude-3.5-Sonnet | image + text | 44.7 | **66.7** | 51.7 | 41.7 | 36.7 | 26.7 |
+| InternVL2.5-78B | image + text | 30.7 | 36.7 | 38.3 | 33.3 | 21.7 | 23.3 |
+| Qwen2-VL-72B | image + text | 21.2 | 26.7 | 30.0 | 28.3 | 16.0 | 5.0 |
+| GPT-4o | text only | 17.4 | 21.7 | 21.7 | 26.7 | 16.7 | 0.0 |
+
+<sub>Baselines are from Table 3 of the EmbodiedBench paper; bold marks DepthJev and the best baseline per column. The <a href="https://zjucqr.github.io/DepthJev/">project page</a> compares all 15 models.</sub>
 
 <a id="how-it-works"></a>
 
 ## 🏗️ How it works
 
-1. **👁️ Perceive.** Depth Anything 3 estimates metric depth; OWLv2 finds the target.
-2. **📝 Describe.** Geometry and action history become text facts about free space, target distance and movement constraints.
-3. **🎯 Act.** Jev reads the facts, selects one of eight navigation actions, and the loop repeats with the next observation.
+Each step runs through three stages, and each stage is one sub-package of [`depthjev/`](depthjev):
+
+1. **👁️ Perceive** ([`perception/`](depthjev/perception)). Depth Anything 3 estimates metric depth; OWLv2 finds the target. The depth map is back-projected, levelled against the floor and cut into five sectors.
+2. **📝 Describe** ([`language/`](depthjev/language)). Free space, target distance and the action history become text facts in four distance bins: under 0.5 m, 0.5 to 1 m, 1 to 2 m and over 2 m.
+3. **🎯 Act** ([`decision/`](depthjev/decision)). Jev reads the facts and selects one of eight navigation actions, and the loop repeats with the next observation.
 
 ### 🍝 Example
 
@@ -105,17 +112,17 @@
 
 <a id="getting-started"></a>
 
-## 🚀 Getting Started
+## 🚀 Getting started
 
-All commands run from the repository root.
+DepthJev runs in two Python environments: the **server** (Python 3.11, one GPU) runs the models, and the **evaluator** (Python 3.9, CPU) runs EmbodiedBench and AI2-THOR. All commands run from the repository root.
 
-**1. Clone the repository and its dependencies**
+**1. Clone with the pinned dependencies**
 
 ```bash
-git clone https://github.com/ZJUCQR/DepthJev.git && cd DepthJev
-git clone https://github.com/EmbodiedBench/EmbodiedBench.git repos/EmbodiedBench
-git clone https://github.com/ByteDance-Seed/Depth-Anything-3.git repos/Depth-Anything-3
+git clone --recursive https://github.com/ZJUCQR/DepthJev.git && cd DepthJev
 ```
+
+EmbodiedBench and Depth Anything 3 are git submodules in `third_party/`, pinned to the commits behind the results. In an existing clone, run `git submodule update --init`.
 
 **2. Server environment**
 
@@ -132,8 +139,10 @@ hf download google/owlv2-base-patch16-ensemble --local-dir checkpoints/owlv2-bas
 ```bash
 conda create -y -p envs/depthjev-eval python=3.9.21 pip
 conda activate ./envs/depthjev-eval
-pip install -r requirements-eval.txt
+pip install -r requirements.txt
 ```
+
+The same `requirements.txt` serves both environments: environment markers select the packages by Python version.
 
 **4. Headless rendering for AI2-THOR**
 
@@ -164,6 +173,8 @@ bash scripts/run.sh full --sets all --ratio 1 --parallel  # one server per subse
 | `--gpus` | visible GPUs | CUDA devices for the servers |
 | `--parallel` | off | one server + evaluator per subset |
 
+The run prints its report at the end; `python -m depthjev.evaluation.report RUN_NAME --ratio R` prints it again later.
+
 <details>
 <summary><b>Server and evaluator in separate terminals</b></summary>
 
@@ -178,14 +189,16 @@ The server listens on `127.0.0.1` by default. For an evaluator on another machin
 
 ## ⚙️ Configuration
 
-All settings live in [config.json](config.json).
+There is no configuration file. Server settings are flags of `python -m depthjev.server` (`bash scripts/server.sh --help`), and each flag can also be set as an environment variable: `--jev-model` as `DEPTHJEV_JEV_MODEL`, and so on.
 
-| Key | Default |
+| Flag | Default |
 | --- | --- |
-| `server_env`, `eval_env` | `envs/depthjev`, `envs/depthjev-eval` |
-| `da3_dir`, `owlv2_dir` | `checkpoints/...` |
-| `jev_model`, `jev_timeout` | `jev-latest`, `20` |
-| `port`, `detection_threshold` | `23333`, `0.1` |
+| `--da3-dir`, `--owlv2-dir` | `checkpoints/DA3METRIC-LARGE`, `checkpoints/owlv2-base-patch16-ensemble` |
+| `--jev-model`, `--jev-timeout` | `jev-latest`, `20` |
+| `--detection-threshold` | `0.1` |
+| `--host`, `--port` | `127.0.0.1`, `23333` |
+
+The scripts also read `DEPTHJEV_SERVER_ENV` and `DEPTHJEV_EVAL_ENV`, the two environments (default `envs/depthjev` and `envs/depthjev-eval`), and `DEPTHJEV_PORT`.
 
 <a id="results"></a>
 
@@ -236,26 +249,51 @@ With AI2-THOR software rendering, a single run averages about 21 s per episode.
 
 </details>
 
-## 📁 Project Structure
+## 📁 Project structure
 
 ```
-depthjev/
-├── server.py         # Flask /process + /health, one JSONL line per request
-├── policy.py         # one step: parse → depth → detect → facts → Jev → EmbodiedBench JSON
-├── prompt_parse.py   # instruction and action history from the EmbodiedBench prompt
-├── depth.py          # DA3METRIC-LARGE → metric depth
-├── detect.py         # OWLv2 target detection
-├── geometry.py       # back-projection, floor estimate, sector distances, step collision
-├── facts.py          # the state Jev reads, move checks, search status
-├── jev_client.py     # the three Jev Choices, rules, iTHOR types, detector aliases
-├── actions.py        # the eight EB-Navigation actions
-├── config.py         # config.json → shell variables
-├── eb_launch.py      # starts EmbodiedBench in the evaluation environment
-└── report.py         # latency, success and per-episode tables
-scripts/
-├── run.sh            # end-to-end evaluation, single or --parallel
-├── server.sh         # server only
-└── eval.sh           # evaluator only
+DepthJev/
+├── depthjev/                # the agent: one sub-package per stage of a step
+│   ├── perception/          # 👁️ the frame becomes metres
+│   │   ├── depth.py         #    Depth Anything 3 metric depth
+│   │   ├── detection.py     #    OWLv2 open-vocabulary detection
+│   │   └── geometry.py      #    back-projection, floor, free space per sector, step collision, target range
+│   ├── language/            # 📝 metres and history become the text Jev reads
+│   │   ├── prompt.py        #    instruction and action history from the EmbodiedBench prompt
+│   │   ├── facts.py         #    distance bins, move checks, search status, the JSON state
+│   │   ├── actions.py       #    the eight EB-Navigation actions
+│   │   └── objects.py       #    the 125 iTHOR object types and detector aliases
+│   ├── decision/            # 🎯 the text becomes an action
+│   │   ├── jev.py           #    Jev client and its three questions
+│   │   └── policy.py        #    one step: parse → depth → detect → facts → Jev → reply
+│   ├── server.py            # Flask /process and /health, one JSON line per request
+│   └── evaluation/          # runs in the Python 3.9 evaluation environment
+│       ├── launch.py        #    starts EmbodiedBench against the server
+│       └── report.py        #    latency, success and per-episode tables
+├── scripts/
+│   ├── run.sh               # end to end: server, evaluator and report, single or --parallel
+│   ├── server.sh            # server only
+│   └── eval.sh              # evaluator only
+├── third_party/             # git submodules: EmbodiedBench, Depth-Anything-3
+├── assets/                  # README figures
+└── requirements.txt         # both environments, selected by Python version
+```
+
+Setup and runs add `envs/`, `checkpoints/` and `logs/`, which git ignores.
+
+<a id="citation"></a>
+
+## 📝 Citation
+
+If DepthJev helps your research, please cite it:
+
+```bibtex
+@misc{depthjev2026,
+  title        = {DepthJev: Turning Depth into Text for Embodied Navigation},
+  author       = {ZJUCQR},
+  year         = {2026},
+  howpublished = {\url{https://github.com/ZJUCQR/DepthJev}}
+}
 ```
 
 ## 🙏 Acknowledgements

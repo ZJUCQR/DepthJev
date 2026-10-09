@@ -1,26 +1,31 @@
 """The text facts Jev reads at each step.
 
-StepFacts holds what one step knows: whether the target is visible, its sector and distance bin, the free distance in each of the five sectors, whether each 0.25 m move would collide, the camera pitch, the search status and the last three actions with their outcome. to_state turns it into the JSON state sent to Jev, and to_text into a one-line summary for the reply. The summary has no apostrophes because EmbodiedBench replaces every ' with " before it parses the reply.
+Metres become words through four distance bins (under 0.5 m, 0.5 to 1 m, 1 to 2 m, over 2 m). StepFacts holds what one step knows: whether the target is visible, its sector and distance bin, the free distance in each of the five sectors, whether each 0.25 m move would collide, the camera pitch, the search status and the last three actions with their outcome. to_state turns it into the JSON state sent to Jev, and to_text into a one-line summary for the reply. The summary has no apostrophes because EmbodiedBench replaces every ' with " before it parses the reply.
 """
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass, field
 
-from depthjev.actions import MAX_EPISODE_STEPS
-from depthjev.geometry import SECTOR_NAMES, distance_bin
-from depthjev.prompt_parse import HistoryItem
+from depthjev.language.actions import MAX_EPISODE_STEPS
+from depthjev.language.prompt import HistoryItem
+from depthjev.perception.geometry import SECTOR_NAMES
 
-DIRECTION_OPTIONS = {
-    "left": "to the left of the current view; a rotate_left would bring it into view",
-    "right": "to the right of the current view; a rotate_right would bring it into view",
-    "behind": "behind the robot; two rotations are needed",
-    "ahead": "straight ahead but too far or too small to be detected yet; moving forward helps",
-    "above": "above the current view, for example on a high shelf while the camera looks down; look_up helps",
-    "below": "below the current view, for example on the floor or a low surface while the camera is level; look_down helps",
-}
-
+DISTANCE_BINS = ((0.5, "under 0.5 m"), (1.0, "0.5 to 1 m"), (2.0, "1 to 2 m"), (math.inf, "over 2 m"))
 CLEAR, BLOCKED, UNKNOWN = "clear", "blocked", "unknown"
+
+
+def distance_bin(distance_m: float | None) -> str:
+    """None/NaN = no measurement ("unknown"); +inf = nothing seen in that direction ("over 2 m")."""
+    if distance_m is None or math.isnan(distance_m):
+        return "unknown"
+    if distance_m == math.inf:
+        return DISTANCE_BINS[-1][1]
+    for upper, label in DISTANCE_BINS:
+        if distance_m < upper:
+            return label
+    return DISTANCE_BINS[-1][1]
 
 
 @dataclass

@@ -12,8 +12,8 @@ import time
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from depthjev.actions import ACTIONS
-from depthjev.facts import DIRECTION_OPTIONS
+from depthjev.language.actions import ACTIONS
+from depthjev.language.objects import OBJECT_TYPES, display_name
 
 DEFAULT_MODEL = "jev-latest"
 
@@ -46,6 +46,15 @@ ACTION_INSTRUCTIONS = (
     "move_ahead may still fail once; after such a failure prefer look_down over guessing."
 )
 
+DIRECTION_OPTIONS = {
+    "left": "to the left of the current view; a rotate_left would bring it into view",
+    "right": "to the right of the current view; a rotate_right would bring it into view",
+    "behind": "behind the robot; two rotations are needed",
+    "ahead": "straight ahead but too far or too small to be detected yet; moving forward helps",
+    "above": "above the current view, for example on a high shelf while the camera looks down; look_up helps",
+    "below": "below the current view, for example on the floor or a low surface while the camera is level; look_down helps",
+}
+
 DIRECTION_INSTRUCTIONS = (
     "The target object is not visible in the current camera view. Where is it most likely relative to the "
     "robot right now? Use the instruction, the recent actions (rotations change what is in view), where the "
@@ -57,66 +66,6 @@ TARGET_TYPE_INSTRUCTIONS = (
     "that object? Pick the single best match. When the instruction describes the object indirectly, by its "
     "use, its appearance, or inside a story, choose the type that fits the description."
 )
-
-
-# The 125 iTHOR object types, the options of the target_type question. This is the public type list from
-# https://ai2thor.allenai.org/ithor/documentation/objects/object-types, not the benchmark's answers.
-OBJECT_TYPES = tuple(
-    """
-    AlarmClock AluminumFoil Apple AppleSliced ArmChair BaseballBat BasketBall Bathtub BathtubBasin Bed Blinds
-    Book Boots Bottle Bowl Box Bread BreadSliced ButterKnife Cabinet Candle CD CellPhone Chair Cloth
-    CoffeeMachine CoffeeTable CounterTop CreditCard Cup Curtains Desk DeskLamp Desktop DiningTable DishSponge
-    DogBed Drawer Dresser Dumbbell Egg EggCracked Faucet Floor FloorLamp Footstool Fork Fridge GarbageBag
-    GarbageCan HandTowel HandTowelHolder HousePlant Kettle KeyChain Knife Ladle Laptop LaundryHamper Lettuce
-    LettuceSliced LightSwitch Microwave Mirror Mug Newspaper Ottoman Painting Pan PaperTowelRoll Pen Pencil
-    PepperShaker Pillow Plate Plunger Poster Pot Potato PotatoSliced RemoteControl RoomDecor Safe SaltShaker
-    ScrubBrush Shelf ShelvingUnit ShowerCurtain ShowerDoor ShowerGlass ShowerHead SideTable Sink SinkBasin
-    SoapBar SoapBottle Sofa Spatula Spoon SprayBottle Statue Stool StoveBurner StoveKnob TableTopDecor
-    TargetCircle TeddyBear Television TennisRacket TissueBox Toaster Toilet ToiletPaper ToiletPaperHanger Tomato
-    TomatoSliced Towel TowelHolder TVStand VacuumCleaner Vase Watch WateringCan Window WineBottle
-    """.split()
-)
-
-
-def display_name(object_type: str) -> str:
-    """'GarbageCan' -> 'garbage can' (what the detector query and the facts use)."""
-    out = []
-    for i, ch in enumerate(object_type):
-        if ch.isupper() and i and not object_type[i - 1].isupper():
-            out.append(" ")
-        out.append(ch)
-    return "".join(out).lower()
-
-
-# Extra everyday phrasings for the open-vocabulary detector; the iTHOR type name alone is sometimes
-# an unusual phrase for OWLv2 ("garbage can" scored below 0.1 on most frames of the 15-episode smoke).
-DETECTOR_ALIASES = {
-    "GarbageCan": ["trash can", "bin"],
-    "CellPhone": ["smartphone", "mobile phone"],
-    "Laptop": ["laptop computer", "notebook computer"],
-    "DeskLamp": ["lamp", "table lamp"],
-    "FloorLamp": ["lamp"],
-    "AlarmClock": ["clock"],
-    "Television": ["tv"],
-    "RemoteControl": ["tv remote"],
-    "HousePlant": ["potted plant", "plant"],
-    "CoffeeMachine": ["coffee maker"],
-    "Fridge": ["refrigerator"],
-    "StoveBurner": ["stove"],
-    "SoapBottle": ["soap dispenser"],
-    "TissueBox": ["box of tissues"],
-    "SprayBottle": ["spray bottle"],
-    "Kettle": ["tea kettle"],
-    "Bread": ["loaf of bread"],
-    "Mug": ["coffee mug"],
-    "Cup": ["cup"],
-    "Bowl": ["bowl"],
-}
-
-
-def detector_queries(object_type: str) -> list[str]:
-    """Names handed to OWLv2 for one iTHOR type: the spaced type name plus its aliases."""
-    return [display_name(object_type)] + DETECTOR_ALIASES.get(object_type, [])
 
 
 class JevError(RuntimeError):
@@ -141,7 +90,7 @@ class JevResponse:
 
 def _key_from_dotenv() -> str | None:
     """TYPESAFE_API_KEY from the .env file at the repository root, see .env.example."""
-    path = Path(__file__).resolve().parents[1] / ".env"
+    path = Path(__file__).resolve().parents[2] / ".env"
     if not path.is_file():
         return None
     for line in path.read_text(encoding="utf-8").splitlines():

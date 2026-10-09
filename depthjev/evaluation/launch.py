@@ -2,7 +2,7 @@
 
 It sets server_url (read by embodiedbench/planner/custom_model.py at import time), switches AI2-THOR to the Linux64 build when asked (EBNavEnv hard-codes CloudRendering, which needs a Vulkan driver; replacing the class in ai2thor.platform before EmbodiedBench imports it is enough), and runs embodiedbench.main the way python -m would, passing the remaining arguments through as hydra overrides. scripts/eval.sh is the normal entry point. It runs in the evaluation environment (Python 3.9), so this module must stay 3.9-compatible and must not import the rest of the package. By hand, from the repo root:
 
-    python -m depthjev.eb_launch --server-url http://HOST:23333/process --platform Linux64 env=eb-nav model_name=depthjev model_type=custom exp_name=smoke eval_sets=[base] down_sample_ratio=0.05
+    python -m depthjev.evaluation.launch --server-url http://HOST:23333/process --platform Linux64 env=eb-nav model_name=depthjev model_type=custom exp_name=smoke eval_sets=[base] down_sample_ratio=0.05
 """
 
 import argparse
@@ -12,8 +12,8 @@ import sys
 import types
 from pathlib import Path
 
-REPO = Path(__file__).resolve().parents[1]
-EB_ROOT = REPO / "repos" / "EmbodiedBench"
+REPO = Path(__file__).resolve().parents[2]
+EB_ROOT = REPO / "third_party" / "EmbodiedBench"
 
 
 def stub_lmdeploy():
@@ -34,7 +34,11 @@ def stub_lmdeploy():
 
 
 def main():
-    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser = argparse.ArgumentParser(
+        prog="python -m depthjev.evaluation.launch",
+        description=__doc__,
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
     parser.add_argument(
         "--server-url",
         default=os.environ.get("server_url"),

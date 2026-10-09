@@ -19,26 +19,26 @@ DA3_CANONICAL_FOCAL = 300.0  # alignment.apply_metric_scaling(scale_factor=300.0
 CAMERA_HEIGHT_M = 1.576  # AI2-THOR default agent, standing (camera y above the floor)
 AGENT_RADIUS_M = 0.2  # AI2-THOR agent capsule radius
 MOVE_STEP_M = 0.25  # every translation action moves 0.25 m
-OBSTACLE_MIN_HEIGHT_M = (
-    0.15  # points lower than this above the floor count as floor (rugs, thresholds); to be calibrated
-)
-OBSTACLE_MAX_HEIGHT_M = 1.8  # points higher than this are ceiling / lamps the agent walks under; to be calibrated
-FLOOR_PERCENTILE = 90  # floor = the deepest (largest Yw) points of the lower half; 90th pct is robust to clutter
-FLOOR_RANGE_M = (
-    0.9,
-    2.0,
-)  # covers the DA3 scale band measured on the GPU smoke (x0.67 near, x0.95 far); else the constant
-MIN_OBSTACLE_PIXELS = 20  # fewer obstacle pixels than this are treated as noise; to be calibrated
+
+# Obstacles are points between these heights above the floor: lower points are floor (rugs, thresholds),
+# higher points are ceiling and lamps the agent walks under. Set by hand, not tuned.
+OBSTACLE_MIN_HEIGHT_M = 0.15
+OBSTACLE_MAX_HEIGHT_M = 1.8
+# Floor = the deepest (largest Yw) points of the lower half; the 90th percentile is robust to clutter.
+FLOOR_PERCENTILE = 90
+# Accepted floor distances: covers the DA3 scale band measured on sample frames (x0.67 near, x0.95 far).
+# Outside it, the floor falls back to CAMERA_HEIGHT_M.
+FLOOR_RANGE_M = (0.9, 2.0)
+MIN_OBSTACLE_PIXELS = 20  # fewer obstacle pixels than this are treated as noise; set by hand
 DEPTH_VALID_RANGE_M = (0.05, 20.0)
 
 SECTOR_NAMES = ("far_left", "left", "center", "right", "far_right")
-DISTANCE_BINS = ((0.5, "under 0.5 m"), (1.0, "0.5 to 1 m"), (2.0, "1 to 2 m"), (math.inf, "over 2 m"))
 
 
 def focal_px(size_px: float, fov_deg: float = FOV_DEG) -> float:
     """Focal length in pixels for a square frame of ``size_px`` pixels and the given field of view.
 
-    500 px / 100 deg -> 209.8 px; 504 px / 100 deg -> 211.4 px (the value used in the README).
+    500 px / 100 deg -> 209.8 px; 504 px / 100 deg -> 211.4 px (the value depth.py uses).
     """
     return size_px / 2.0 / math.tan(math.radians(fov_deg) / 2.0)
 
@@ -46,18 +46,6 @@ def focal_px(size_px: float, fov_deg: float = FOV_DEG) -> float:
 def canonical_to_metric(depth_canonical: np.ndarray, focal_processed_px: float) -> np.ndarray:
     """DA3 canonical depth -> metres: depth * focal / 300 (focal at the processed resolution)."""
     return depth_canonical * (focal_processed_px / DA3_CANONICAL_FOCAL)
-
-
-def distance_bin(distance_m: float | None) -> str:
-    """None/NaN = no measurement ("unknown"); +inf = nothing seen in that direction ("over 2 m")."""
-    if distance_m is None or math.isnan(distance_m):
-        return "unknown"
-    if distance_m == math.inf:
-        return DISTANCE_BINS[-1][1]
-    for upper, label in DISTANCE_BINS:
-        if distance_m < upper:
-            return label
-    return DISTANCE_BINS[-1][1]
 
 
 def sector_of_column(col: float, width: int) -> str:

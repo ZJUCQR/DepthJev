@@ -1,18 +1,19 @@
 """Report one or more DepthJev runs: per-step latency from the server JSONL, per-subset success from the EmbodiedBench results, and a per-episode table with the target type Jev resolved from the instruction. From the repo root:
 
-    python3 -m depthjev.report <run_name> [<run_name> ...] [--ratio r]
+    python -m depthjev.evaluation.report <run_name> [<run_name> ...] [--ratio r]
 
-For each run it reads logs/server/<run_name>.jsonl and repos/EmbodiedBench/running/eb_nav/depthjev_<run_name>/; several runs (e.g. one per GPU card, each covering different subsets) are merged. It uses only the standard library and stays Python 3.9-compatible, because scripts/run.sh runs it in the evaluation environment.
+For each run it reads logs/server/<run_name>.jsonl and third_party/EmbodiedBench/running/eb_nav/depthjev_<run_name>/; several runs (e.g. one per subset with scripts/run.sh --parallel) are merged. It uses only the standard library and stays Python 3.9-compatible, because scripts/run.sh runs it in the evaluation environment.
 """
 
+import argparse
 import glob
 import json
 import os
 import statistics
-import sys
 from pathlib import Path
 
-REPO = Path(__file__).resolve().parents[1]
+REPO = Path(__file__).resolve().parents[2]
+EB_ROOT = REPO / "third_party" / "EmbodiedBench"
 SETS = ["base", "common_sense", "complex_instruction", "visual_appearance", "long_horizon"]
 
 
@@ -33,14 +34,7 @@ def load_rows(runs):
 
 
 def result_files(run, subset):
-    pattern = (
-        REPO
-        / "repos/EmbodiedBench/running/eb_nav"
-        / f"depthjev_{run}"
-        / subset
-        / "results"
-        / "episode_*_final_res.json"
-    )
+    pattern = EB_ROOT / "running/eb_nav" / f"depthjev_{run}" / subset / "results" / "episode_*_final_res.json"
     return sorted(glob.glob(str(pattern)), key=lambda p: int(os.path.basename(p).split("_")[1]))
 
 
@@ -109,9 +103,7 @@ def episode_table(rows, results, ratio):
     for s in SETS:
         if not results.get(s):
             continue
-        tasks = json.load(open(REPO / "repos/EmbodiedBench/embodiedbench/envs/eb_navigation/datasets" / f"{s}.json"))[
-            "tasks"
-        ]
+        tasks = json.load(open(EB_ROOT / "embodiedbench/envs/eb_navigation/datasets" / f"{s}.json"))["tasks"]
         truth += [(s, t) for t in tasks[::every]]
     print(
         f"\n{'subset':20s}{'true':15s}{'resolved':15s}{'conf':>5s} {'ok':>2s} {'succ':>4s} {'steps':>5s} {'vis%':>5s} {'s/step':>6s}  instruction"
@@ -146,16 +138,20 @@ def episode_table(rows, results, ratio):
     print(f"target type resolved correctly: {n_ok}/{n}")
 
 
-if __name__ == "__main__":
-    args = sys.argv[1:]
-    ratio = 1.0
-    if "--ratio" in args:
-        i = args.index("--ratio")
-        ratio = float(args[i + 1])
-        del args[i : i + 2]
-    runs = args or ["full"]
-    rows = load_rows(runs)
-    results = load_results(runs)
+def main(argv=None):
+    parser = argparse.ArgumentParser(
+        prog="python -m depthjev.evaluation.report",
+        description="Latency, success and per-episode tables of DepthJev runs.",
+    )
+    parser.add_argument("runs", nargs="*", default=["full"], help="run names (logs/server/<run>.jsonl)")
+    parser.add_argument("--ratio", type=float, default=1.0, help="the down_sample_ratio the runs used")
+    args = parser.parse_args(argv)
+    rows = load_rows(args.runs)
+    results = load_results(args.runs)
     latency_table(rows)
     subset_table(results)
-    episode_table(rows, results, ratio)
+    episode_table(rows, results, args.ratio)
+
+
+if __name__ == "__main__":
+    main()

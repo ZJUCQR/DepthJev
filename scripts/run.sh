@@ -5,7 +5,7 @@
 #   bash scripts/run.sh [RUN_NAME] [--sets LIST] [--ratio R] [--gpus IDS] [--parallel]
 #
 #   RUN_NAME     default smoke. Requests are logged to logs/server/<run>.jsonl, EmbodiedBench writes its
-#                results to repos/EmbodiedBench/running/eb_nav/depthjev_<run>/.
+#                results to third_party/EmbodiedBench/running/eb_nav/depthjev_<run>/.
 #   --sets LIST  comma-separated subsets (base, common_sense, complex_instruction, visual_appearance,
 #                long_horizon) or all; default base.
 #   --ratio R    EmbodiedBench down_sample_ratio: every round(1/R)-th task of each subset; default 0.05
@@ -13,16 +13,17 @@
 #   --gpus IDS   comma-separated CUDA devices for the servers; default the visible devices. Without
 #                --parallel only the first one is used.
 #   --parallel   one server and one evaluator per subset instead of one for all subsets. Subset i runs as
-#                <run>-<subset> on GPU IDS[i mod n], port DEPTHJEV_PORT+i and X display :100+i. Several
-#                subsets may share a card: a server needs < 4 GB and AI2-THOR renders on the CPU.
+#                <run>-<subset> on GPU IDS[i mod n], port DEPTHJEV_PORT+i (default 23333+i) and X display
+#                :100+i. Several subsets may share a card: a server needs < 4 GB and AI2-THOR renders on the CPU.
 #
 #   bash scripts/run.sh                                            # smoke test, 3 base episodes
 #   bash scripts/run.sh full --sets all --ratio 1                  # all 300 episodes with one server
 #   bash scripts/run.sh full --sets all --ratio 1 --parallel       # the same, one subset per GPU
+#
+#   DEPTHJEV_SERVER_ENV, DEPTHJEV_EVAL_ENV and DEPTHJEV_PORT are passed on to server.sh and eval.sh.
 set -euo pipefail
 REPO=$(cd "$(dirname "$0")/.." && pwd)
-CFG=$(cd "$REPO" && "${DEPTHJEV_PYTHON:-python3}" -m depthjev.config) || { echo "cannot read config.json; set DEPTHJEV_PYTHON to a Python 3 interpreter" >&2; exit 1; }
-eval "$CFG"
+PORT=${DEPTHJEV_PORT:-23333}
 
 ALL_SETS=(base common_sense complex_instruction visual_appearance long_horizon)
 usage() { awk 'NR > 1 && !/^#/ { exit } NR > 1 { sub(/^# ?/, ""); print }' "$0"; exit "${1:-0}"; }
@@ -100,7 +101,7 @@ if [ $PARALLEL = 1 ]; then
         (
             trap stop_slot EXIT
             trap 'exit 143' TERM
-            run_slot "$RUN-$s" "$s" "${GPU_LIST[$((i % ${#GPU_LIST[@]}))]}" $((DEPTHJEV_PORT + i)) ":$((100 + i))"
+            run_slot "$RUN-$s" "$s" "${GPU_LIST[$((i % ${#GPU_LIST[@]}))]}" $((PORT + i)) ":$((100 + i))"
         ) &
         RUNS+=("$RUN-$s") PIDS+=($!)
     done
@@ -109,10 +110,10 @@ else
     RUNS=("$RUN")
     trap stop_slot EXIT
     trap 'exit 130' INT TERM
-    run_slot "$RUN" "$SETS" "${GPU_LIST[0]}" "$DEPTHJEV_PORT" "${DISPLAY:-:99}" || status=1
+    run_slot "$RUN" "$SETS" "${GPU_LIST[0]}" "$PORT" "${DISPLAY:-:99}" || status=1
     stop_slot
 fi
 
 echo "=== report ==="
-(cd "$REPO" && "$DEPTHJEV_EVAL_ENV/bin/python" -m depthjev.report "${RUNS[@]}" --ratio "$RATIO")
+(cd "$REPO" && "${DEPTHJEV_EVAL_ENV:-$REPO/envs/depthjev-eval}/bin/python" -m depthjev.evaluation.report "${RUNS[@]}" --ratio "$RATIO")
 exit $status
