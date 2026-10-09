@@ -25,6 +25,10 @@
 
 </div>
 
+<p align="center">
+  <img src="assets/teaser.gif" width="100%" alt="DepthJev on a recorded EB-Navigation episode: the camera frame with the detected pot, Depth Anything 3 metric depth sweeping across it in five sectors, and the text facts Jev reads at each step">
+</p>
+
 **DepthJev** is a navigation agent for [EmbodiedBench](https://github.com/EmbodiedBench/EmbodiedBench) EB-Navigation. It converts each RGB frame into metric depth with **Depth Anything 3**, detects the target with **OWLv2**, and turns the geometry into short text facts. The **Jev** decision model reads only these facts, never the image, and picks the next action.
 
 <p align="center">

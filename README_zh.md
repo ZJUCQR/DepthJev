@@ -25,6 +25,10 @@
 
 </div>
 
+<p align="center">
+  <img src="assets/teaser.gif" width="100%" alt="DepthJev 在一个 EB-Navigation 回合上的记录：带检测框的相机画面、按五个扇区扫过的 Depth Anything 3 米制深度，以及每一步 Jev 读到的文本事实">
+</p>
+
 **DepthJev** 是 [EmbodiedBench](https://github.com/EmbodiedBench/EmbodiedBench) EB-Navigation 上的导航智能体。它用 **Depth Anything 3** 把每帧 RGB 转成米制深度，用 **OWLv2** 检测目标，再把几何信息写成简短的文字事实。**Jev** 决策模型只读这些事实、从不看图像，据此选出下一个动作。
 
 <p align="center">
