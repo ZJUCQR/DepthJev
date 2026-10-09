@@ -2,509 +2,338 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DepthJev</title>
-<meta name="description" content="DepthJev turns metric depth and detections into text facts, so a text-only decision model can navigate EB-Navigation.">
+<meta name="description" content="DepthJev turns metric depth and detections into text facts. Its decision model never sees the image and still reaches 46.7% on all 300 EB-Navigation episodes.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://zjucqr.github.io/DepthJev/">
 <meta property="og:title" content="DepthJev: Turning Depth into Text for Embodied Navigation">
-<meta property="og:description" content="46.7% success on all 300 EB-Navigation episodes with a decision model that never sees the image.">
-<meta property="og:image" content="how-it-works.png">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧭</text></svg>">
+<meta property="og:description" content="46.7% on all 300 EB-Navigation episodes with a decision model that reads only text, above Claude-3.5-Sonnet with images.">
+<meta property="og:image" content="https://zjucqr.github.io/DepthJev/media/og.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#060912">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-<style>
-:root {
-  --bg: #07090f;
-  --bg2: #0d111b;
-  --card: rgba(255, 255, 255, 0.035);
-  --border: rgba(255, 255, 255, 0.09);
-  --text: #e8ecf4;
-  --muted: #98a2b8;
-  --dim: #5d6780;
-  --a1: #38bdf8;
-  --a2: #a78bfa;
-  --a3: #f472b6;
-  --ok: #34d399;
-  --warn: #fbbf24;
-  --grad: linear-gradient(120deg, var(--a1), var(--a2) 55%, var(--a3));
-  --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
-}
-* { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; }
-body {
-  background: var(--bg);
-  color: var(--text);
-  font: 16px/1.65 Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
-  -webkit-font-smoothing: antialiased;
-  overflow-x: hidden;
-}
-a { color: inherit; text-decoration: none; }
-.wrap { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
-
-/* nav */
-nav {
-  position: fixed; inset: 0 0 auto 0; z-index: 50;
-  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
-  background: rgba(7, 9, 15, 0.6); border-bottom: 1px solid transparent;
-  transition: border-color .3s;
-}
-nav.scrolled { border-bottom-color: var(--border); }
-nav .wrap { display: flex; align-items: center; justify-content: space-between; height: 60px; }
-.logo { font-weight: 800; letter-spacing: -.02em; font-size: 18px; display: flex; gap: 8px; align-items: center; }
-.links { display: flex; gap: 26px; font-size: 14px; color: var(--muted); }
-.links a:hover { color: var(--text); }
-.gh {
-  display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600;
-  padding: 7px 14px; border-radius: 999px; border: 1px solid var(--border); background: var(--card);
-  transition: border-color .2s, transform .2s;
-}
-.gh:hover { border-color: var(--a2); transform: translateY(-1px); }
-.gh svg { width: 16px; height: 16px; fill: currentColor; }
-
-/* hero */
-.hero { position: relative; padding: 160px 0 90px; text-align: center; overflow: hidden; }
-.hero canvas { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; opacity: .55; }
-.hero::after {
-  content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none;
-  background:
-    radial-gradient(600px 300px at 20% 10%, rgba(56, 189, 248, .18), transparent 70%),
-    radial-gradient(600px 320px at 80% 20%, rgba(167, 139, 250, .18), transparent 70%),
-    linear-gradient(to bottom, transparent 60%, var(--bg));
-}
-.hero .wrap { position: relative; z-index: 1; }
-h1 {
-  font-size: clamp(44px, 9vw, 92px); font-weight: 800; letter-spacing: -.045em; line-height: 1.02;
-  margin: 0 0 14px;
-}
-.tagline { font-size: clamp(22px, 3.4vw, 34px); font-weight: 700; letter-spacing: -.02em; line-height: 1.25; margin-bottom: 18px; }
-.grad { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
-.sub { font-size: clamp(18px, 2.4vw, 23px); color: var(--muted); max-width: 720px; margin: 0 auto; }
-.sub em { color: var(--text); font-style: normal; font-weight: 600; }
-.cta { display: flex; gap: 12px; justify-content: center; margin-top: 36px; flex-wrap: wrap; }
-.btn {
-  display: inline-flex; align-items: center; gap: 9px; padding: 12px 22px; border-radius: 12px;
-  font-weight: 600; font-size: 15px; transition: transform .2s, box-shadow .2s;
-}
-.btn svg { width: 18px; height: 18px; fill: currentColor; }
-.btn.primary { background: var(--text); color: #0a0d14; }
-.btn.primary:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(167, 139, 250, .35); }
-.btn.ghost { border: 1px solid var(--border); background: var(--card); }
-.btn.ghost:hover { transform: translateY(-2px); border-color: var(--a1); }
-
-/* stats */
-.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-top: 70px; }
-.stat {
-  padding: 22px 18px; border-radius: 16px; border: 1px solid var(--border); background: var(--card);
-  text-align: left;
-}
-.stat .n { font-size: 34px; font-weight: 800; letter-spacing: -.03em; }
-.stat .l { font-size: 13px; color: var(--muted); margin-top: 2px; }
-
-/* sections */
-section { padding: 90px 0; }
-.eyebrow { font-family: var(--mono); font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--a1); }
-h2 { font-size: clamp(30px, 4.4vw, 44px); font-weight: 800; letter-spacing: -.03em; line-height: 1.15; margin: 10px 0 14px; }
-.lead { color: var(--muted); max-width: 680px; font-size: 17px; }
-.card { border: 1px solid var(--border); background: var(--card); border-radius: 20px; }
-
-/* pipeline */
-.figure { margin-top: 40px; padding: 18px; background: #fff; border-radius: 20px; box-shadow: 0 30px 80px rgba(0, 0, 0, .45); }
-.figure img { width: 100%; display: block; border-radius: 10px; }
-.steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 26px; }
-.step { padding: 24px; position: relative; overflow: hidden; }
-.step .ico { font-size: 26px; }
-.step h3 { font-size: 19px; margin: 10px 0 6px; }
-.step p { color: var(--muted); font-size: 15px; }
-.step .num { position: absolute; right: 18px; top: 10px; font-size: 64px; font-weight: 800; color: rgba(255, 255, 255, .04); }
-
-/* terminal and decision card */
-.term { overflow: hidden; display: flex; flex-direction: column; }
-.term .bar { display: flex; gap: 7px; padding: 13px 16px; border-bottom: 1px solid var(--border); align-items: center; }
-.term .bar i { width: 11px; height: 11px; border-radius: 50%; background: #ff5f57; }
-.term .bar i:nth-child(2) { background: #febc2e; }
-.term .bar i:nth-child(3) { background: #28c840; }
-.term .bar span { margin-left: 10px; font-family: var(--mono); font-size: 12px; color: var(--dim); }
-pre { font-family: var(--mono); font-size: 13px; line-height: 1.7; padding: 18px 20px; overflow: auto; flex: 1; }
-.k { color: #7dd3fc; } .s { color: #fcd34d; } .b { color: #f472b6; }
-.decision { padding: 28px; display: flex; flex-direction: column; justify-content: center; gap: 22px; }
-.decision .act { font-family: var(--mono); font-size: 30px; font-weight: 600; }
-.meter { height: 10px; border-radius: 999px; background: rgba(255, 255, 255, .06); overflow: hidden; }
-.meter i { display: block; height: 100%; background: var(--grad); border-radius: inherit; transition: width .6s cubic-bezier(.2, .8, .2, 1); }
-.kv { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.kv div { padding: 14px; border-radius: 12px; background: rgba(255, 255, 255, .03); border: 1px solid var(--border); }
-.kv b { display: block; font-size: 22px; }
-.kv span { font-size: 12px; color: var(--muted); }
-.sectors { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; align-items: end; height: 110px; }
-.sectors div { border-radius: 6px 6px 2px 2px; background: linear-gradient(to top, rgba(56, 189, 248, .25), rgba(56, 189, 248, .7)); height: 10%; transition: height .6s ease; }
-.sectors div.tgt { background: linear-gradient(to top, rgba(244, 114, 182, .25), rgba(244, 114, 182, .85)); }
-.sector-l { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; font-size: 11px; color: var(--dim); text-align: center; font-family: var(--mono); margin-top: 6px; }
-code { font-family: var(--mono); font-size: .9em; }
-
-/* episode player */
-.player { display: grid; grid-template-columns: 1.15fr 1fr; gap: 20px; margin-top: 40px; }
-.viewer { padding: 14px; }
-.frame { position: relative; border-radius: 14px; overflow: hidden; aspect-ratio: 1; background: #000; }
-.frame img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.badge { position: absolute; left: 12px; top: 12px; font: 600 12px var(--mono); padding: 5px 10px; border-radius: 8px; background: rgba(7, 9, 15, .75); backdrop-filter: blur(6px); }
-.badge.win { background: var(--ok); color: #05281c; }
-.controls { display: flex; align-items: center; gap: 14px; margin-top: 14px; }
-.playbtn { width: 40px; height: 40px; border-radius: 50%; border: 0; cursor: pointer; background: var(--text); color: #0a0d14; font-size: 14px; flex: none; }
-.controls input { flex: 1; accent-color: #a78bfa; }
-.mono { font-family: var(--mono); font-size: 13px; color: var(--muted); min-width: 44px; text-align: right; }
-.dots { display: grid; grid-template-columns: repeat(10, 1fr); gap: 4px; margin-top: 12px; }
-.dots button { font: 500 11px var(--mono); color: var(--muted); padding: 6px 0; border-radius: 6px; border: 1px solid var(--border); background: none; cursor: pointer; }
-.dots button.on { background: rgba(167, 139, 250, .18); color: var(--text); border-color: var(--a2); }
-#facts-json { max-height: 420px; white-space: pre-wrap; word-break: break-word; }
-@media (max-width: 860px) { .player { grid-template-columns: 1fr; } }
-
-/* leaderboard */
-.board { margin-top: 40px; padding: 28px; }
-.row { display: grid; grid-template-columns: 190px 1fr 58px; gap: 16px; align-items: center; padding: 9px 0; }
-.row .name { font-size: 15px; }
-.row .name small { display: block; color: var(--dim); font-size: 12px; }
-.row .track { height: 30px; border-radius: 8px; background: rgba(255, 255, 255, .04); overflow: hidden; }
-.row .fill { height: 100%; width: 0; border-radius: 8px; background: rgba(152, 162, 184, .35); transition: width 1.3s cubic-bezier(.2, .8, .2, 1); }
-.row .val { font-family: var(--mono); font-weight: 600; text-align: right; }
-.row.us .fill { background: var(--grad); box-shadow: 0 0 30px rgba(167, 139, 250, .5); }
-.row.us .name { font-weight: 700; }
-.row.us .val { color: var(--a2); }
-.note { font-size: 12px; color: var(--dim); margin-top: 14px; }
-
-/* results grid */
-.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px; }
-.panel { padding: 26px; }
-.panel h3 { font-size: 17px; margin-bottom: 18px; display: flex; justify-content: space-between; align-items: baseline; }
-.panel h3 span { font-size: 13px; color: var(--muted); font-weight: 500; }
-.sub-row { display: grid; grid-template-columns: 150px 1fr 70px; gap: 12px; align-items: center; font-size: 14px; padding: 6px 0; }
-.sub-row .track { height: 10px; border-radius: 999px; background: rgba(255, 255, 255, .05); overflow: hidden; }
-.sub-row .fill { height: 100%; width: 0; background: var(--a1); border-radius: inherit; transition: width 1.2s ease; }
-.sub-row .v { font-family: var(--mono); text-align: right; color: var(--muted); }
-.stack { display: flex; height: 44px; border-radius: 12px; overflow: hidden; margin: 8px 0 18px; }
-.stack div { display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: #0a0d14; width: 0; transition: width 1.2s ease; white-space: nowrap; overflow: hidden; }
-.legend { display: grid; gap: 8px; font-size: 14px; }
-.legend div { display: flex; justify-content: space-between; color: var(--muted); }
-.legend div b { font-family: var(--mono); color: var(--text); font-weight: 600; }
-.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 8px; }
-
-/* thanks */
-.thanks { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 26px; }
-.thanks a { padding: 10px 16px; border-radius: 12px; border: 1px solid var(--border); background: var(--card); font-size: 14px; transition: border-color .2s; }
-.thanks a:hover { border-color: var(--a1); }
-.thanks a span { color: var(--dim); margin-left: 6px; }
-
-footer { padding: 40px 0 60px; color: var(--dim); font-size: 13px; border-top: 1px solid var(--border); }
-footer .wrap { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
-
-.reveal { opacity: 0; transform: translateY(24px); transition: opacity .8s, transform .8s; }
-.reveal.in { opacity: 1; transform: none; }
-
-@media (max-width: 860px) {
-  .links { display: none; }
-  .stats { grid-template-columns: repeat(2, 1fr); }
-  .steps, .grid2 { grid-template-columns: 1fr; }
-  .row { grid-template-columns: 120px 1fr 48px; gap: 10px; }
-  .sub-row { grid-template-columns: 120px 1fr 60px; }
-}
-@media (max-width: 520px) {
-  .wrap { padding: 0 16px; }
-  .hero { padding-top: 120px; }
-  .figure { padding: 8px; }
-  .board, .panel { padding: 18px; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .reveal { opacity: 1; transform: none; transition: none; }
-}
-</style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Sora:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="assets/site.css">
+<script>try { var t = localStorage.getItem("depthjev-theme"); if (t === "light" || t === "dark") document.documentElement.dataset.theme = t; } catch (e) {}</script>
 </head>
 <body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="g-logo" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#f6d543"/><stop offset=".55" stop-color="#f3761b"/><stop offset="1" stop-color="#b43359"/></linearGradient>
+    <symbol id="i-logo" viewBox="0 0 32 32">
+      <path d="M16 27 L5.4 9.5 A19 19 0 0 1 26.6 9.5 Z" fill="url(#g-logo)" opacity=".16"/>
+      <path d="M9.6 16.4 A10 10 0 0 1 22.4 16.4" fill="none" stroke="#f6d543" stroke-width="2.6" stroke-linecap="round"/>
+      <path d="M7.4 12.6 A14.5 14.5 0 0 1 24.6 12.6" fill="none" stroke="#f3761b" stroke-width="2.6" stroke-linecap="round"/>
+      <path d="M5.4 9.5 A19 19 0 0 1 26.6 9.5" fill="none" stroke="#b43359" stroke-width="2.6" stroke-linecap="round"/>
+      <circle cx="16" cy="25.5" r="3.2" fill="currentColor"/>
+    </symbol>
+    <symbol id="i-github" viewBox="0 0 16 16"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 16 16"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="8" r="3"/><path d="M8 1.5v1.5M8 13v1.5M1.5 8H3M13 8h1.5M3.4 3.4l1.1 1.1M11.5 11.5l1.1 1.1M3.4 12.6l1.1-1.1M11.5 4.5l1.1-1.1"/></g></symbol>
+    <symbol id="i-moon" viewBox="0 0 16 16"><path fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" d="M13.5 9.6A5.6 5.6 0 0 1 6.4 2.5a5.6 5.6 0 1 0 7.1 7.1z"/></symbol>
+    <symbol id="i-play" viewBox="0 0 12 12"><path fill="currentColor" d="M3 1.6v8.8L10.2 6z"/></symbol>
+    <symbol id="i-pause" viewBox="0 0 12 12"><path fill="currentColor" d="M2.6 1.6h2.4v8.8H2.6zM7 1.6h2.4v8.8H7z"/></symbol>
+    <symbol id="i-check" viewBox="0 0 16 16"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M3 8.5l3.2 3L13 4.5"/></symbol>
+    <symbol id="i-x" viewBox="0 0 16 16"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M4 4l8 8M12 4l-8 8"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 16 16"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" d="M3 8h10M9 4l4 4-4 4"/></symbol>
+    <symbol id="i-down" viewBox="0 0 16 16"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" d="M8 3v10M4 9l4 4 4-4"/></symbol>
+    <symbol id="a-move_ahead" viewBox="0 0 16 16"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M8 13.5V2.8M3.8 7L8 2.8 12.2 7"/></symbol>
+    <symbol id="a-move_back" viewBox="0 0 16 16"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M8 2.5v10.7M3.8 9L8 13.2 12.2 9"/></symbol>
+    <symbol id="a-move_left" viewBox="0 0 16 16"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M13.5 8H2.8M7 3.8L2.8 8 7 12.2"/></symbol>
+    <symbol id="a-move_right" viewBox="0 0 16 16"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M2.5 8h10.7M9 3.8L13.2 8 9 12.2"/></symbol>
+    <symbol id="a-rotate_left" viewBox="0 0 16 16"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3.6 9.6A4.8 4.8 0 1 0 5 4.4"/><path d="M5.2 1.6 5 4.4l2.8.3"/></g></symbol>
+    <symbol id="a-rotate_right" viewBox="0 0 16 16"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12.4 9.6A4.8 4.8 0 1 1 11 4.4"/><path d="M10.8 1.6l.2 2.8-2.8.3"/></g></symbol>
+    <symbol id="a-look_up" viewBox="0 0 16 16"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M3 3h10M4 11l4-4.2 4 4.2"/></symbol>
+    <symbol id="a-look_down" viewBox="0 0 16 16"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M3 13h10M4 5l4 4.2L12 5"/></symbol>
+  </defs>
+</svg>
 
-<nav id="nav">
-  <div class="wrap">
-    <a class="logo" href="#top">🧭 DepthJev</a>
-    <div class="links">
-      <a href="#method">Method</a>
-      <a href="#example">Example</a>
-      <a href="#results">Results</a>
+<a class="skip" href="#main">Skip to content</a>
+
+<div class="topbar" id="topbar">
+  <div class="wrap topbar-in">
+    <a class="brand" href="#top" aria-label="DepthJev, back to top"><svg aria-hidden="true"><use href="#i-logo"/></svg>DepthJev</a>
+    <nav aria-label="Sections">
+      <a href="#method">Method</a><a href="#results">Results</a><a href="#runs">Runs</a><a href="#all" class="nav-2">All 300</a><a href="#code" class="nav-2">Code</a><a href="#cite" class="nav-2">Cite</a>
+    </nav>
+    <div class="topbar-actions">
+      <button class="icon-btn" id="theme" type="button" aria-label="Switch between light and dark"><svg class="i-sun"><use href="#i-sun"/></svg><svg class="i-moon"><use href="#i-moon"/></svg></button>
+      <a class="icon-btn gh" href="https://github.com/ZJUCQR/DepthJev" aria-label="DepthJev on GitHub"><svg><use href="#i-github"/></svg><span>GitHub</span></a>
     </div>
-    <a class="gh" href="https://github.com/ZJUCQR/DepthJev">
-      <svg viewBox="0 0 16 16"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
-      GitHub
-    </a>
   </div>
-</nav>
+</div>
 
-<header class="hero" id="top">
-  <canvas id="field"></canvas>
-  <div class="wrap">
-    <h1><span class="grad">DepthJev</span></h1>
-    <p class="tagline">Turning Depth into Text for Embodied Navigation</p>
-    <p class="sub">DepthJev converts every RGB frame into metric depth and target detections, then writes them as short text facts.</p>
-    <div class="cta">
-      <a class="btn primary" href="https://github.com/ZJUCQR/DepthJev">
-        <svg viewBox="0 0 16 16"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
-        View on GitHub
-      </a>
-      <a class="btn ghost" href="#example">See an example →</a>
+<main id="main">
+<header class="hero night" id="top">
+  <canvas class="hero-field" id="field" aria-hidden="true"></canvas>
+  <div class="wrap hero-in">
+    <svg class="hero-fan" id="fan" viewBox="0 0 600 440" aria-hidden="true"></svg>
+    <div class="hero-text">
+      <p class="chip-row"><span class="chip"><i class="pulse"></i>EB-Navigation · 300 episodes</span><span class="chip ghost">Text-only decision model</span></p>
+      <h1>Depth<span class="jev">Jev</span></h1>
+      <p class="subtitle">Turning depth into text for embodied&nbsp;navigation</p>
+      <p class="lede">The decision model never sees a pixel. Every frame becomes metric depth and a target box, the geometry becomes a few lines of text in metres, and Jev picks the next move from that text alone. It succeeds in <b>46.7%</b> of all 300 EB-Navigation episodes, more often than Claude-3.5-Sonnet looking at the&nbsp;image.</p>
+      <div class="links">
+        <a class="btn primary" href="#runs"><svg><use href="#i-play"/></svg>Watch a run</a>
+        <a class="btn glass" href="https://github.com/ZJUCQR/DepthJev"><svg><use href="#i-github"/></svg>Code</a>
+        <a class="btn glass" href="#results">Results</a>
+        <a class="btn glass" href="#cite">BibTeX</a>
+      </div>
     </div>
 
-    <div class="stats">
-      <div class="stat"><div class="n grad" data-count="46.7" data-suffix="%">0%</div><div class="l">success on all 300 episodes</div></div>
-      <div class="stat"><div class="n" data-count="0.76" data-suffix=" s" data-dec="2">0 s</div><div class="l">per step on one H100</div></div>
-      <div class="stat"><div class="n" data-count="29.3" data-prefix="+" data-suffix="" >+0</div><div class="l">points over text-only GPT-4o</div></div>
-      <div class="stat"><div class="n" data-count="300" data-dec="0">0</div><div class="l">episodes, five subsets</div></div>
+    <figure class="device" id="hero" aria-labelledby="hero-cap">
+      <div class="device-head">
+        <span class="fig-tag">Fig. 1</span>
+        <p class="device-title" id="hero-cap"><span class="device-label">A recorded episode, as Jev sees it</span><span class="hero-instr" id="hero-instr"></span></p>
+        <button class="pill-btn" id="hero-play" type="button" aria-pressed="true"><svg class="i-pause"><use href="#i-pause"/></svg><svg class="i-play"><use href="#i-play"/></svg><span>Pause</span></button>
+      </div>
+      <div class="hero-grid">
+        <div class="hero-col">
+          <p class="col-lab"><span class="dot dot-depth"></span>Camera <svg class="lab-arrow"><use href="#i-arrow"/></svg> metric depth</p>
+          <div class="view" id="hero-view">
+            <img class="view-rgb" alt="Camera frame of the current step" id="hero-rgb">
+            <img class="view-depth" alt="Metric depth from Depth Anything 3" id="hero-depth">
+            <div class="scanline" id="hero-scan"></div>
+            <svg class="view-overlay" id="hero-overlay" viewBox="0 0 500 500" preserveAspectRatio="none" aria-hidden="true"></svg>
+          </div>
+          <div class="depth-key" aria-hidden="true"><span>0.3 m</span><i></i><span>5 m</span></div>
+        </div>
+        <div class="hero-col">
+          <p class="col-lab"><span class="dot dot-text"></span>Text facts Jev reads</p>
+          <ol class="facts-lines" id="hero-facts"></ol>
+          <p class="facts-foot" id="hero-tokens"></p>
+        </div>
+        <div class="hero-col">
+          <p class="col-lab"><span class="dot dot-jev"></span>Jev's answer</p>
+          <div class="probs" id="hero-probs"></div>
+          <div class="hero-map-wrap">
+            <canvas class="mini-map" id="hero-map" aria-label="Top-down view: the path so far, the target and its 1 m success circle"></canvas>
+            <span class="map-note" id="hero-dist"></span>
+          </div>
+        </div>
+      </div>
+      <div class="device-foot">
+        <div class="steps-dots" id="hero-dots" role="group" aria-label="Steps of the episode"></div>
+        <span class="device-meta" id="hero-meta"></span>
+      </div>
+    </figure>
+
+    <div class="kpis" role="list">
+      <div class="kpi" role="listitem"><b data-count="46.7" data-dec="1" data-suffix="%">46.7%</b><span>success on all 300 EB&#8209;Navigation episodes</span></div>
+      <div class="kpi" role="listitem"><b>3rd<small>/16</small></b><span>agents; both ahead of it see the image</span></div>
+      <div class="kpi" role="listitem"><b data-count="0" data-dec="0">0</b><span>images reach the decision model, only ~1.7k tokens of text</span></div>
+      <div class="kpi" role="listitem"><b data-count="0.76" data-dec="2" data-suffix=" s">0.76 s</b><span>per step on one H100: depth, detection, decision</span></div>
     </div>
   </div>
 </header>
 
-<section id="method">
+<section class="sec" id="method">
   <div class="wrap">
-    <div class="reveal">
-      <div class="eyebrow">Method</div>
-      <h2>Perceive. Describe. Act.</h2>
-      <p class="lead">Monocular metric depth and open-vocabulary detection become a compact, metre-level description of the scene. Jev reasons over that description and returns one of eight navigation actions.</p>
-    </div>
-    <div class="figure reveal"><img src="how-it-works.png" alt="DepthJev pipeline: RGB observation, task and history → metric depth and target detection → text facts → Jev navigation action → next observation"></div>
-    <div class="steps">
-      <div class="card step reveal"><span class="num">1</span><div class="ico">👁️</div><h3>Perceive</h3><p>Depth Anything 3 estimates metric depth; OWLv2 finds the target in the frame.</p></div>
-      <div class="card step reveal"><span class="num">2</span><div class="ico">📝</div><h3>Describe</h3><p>Free space in five sectors, a 0.25 m collision check, target distance and recent actions become text facts.</p></div>
-      <div class="card step reveal"><span class="num">3</span><div class="ico">🎯</div><h3>Act</h3><p>Jev reads the facts, picks one action, and the loop repeats with the next observation.</p></div>
-    </div>
+    <header class="sec-head"><span class="sec-num" aria-hidden="true">01</span><div><p class="kicker">Method</p><h2>From a frame to a paragraph</h2><p class="sec-lede">Each step runs through three stages, and each stage is one sub-package of the code. Perception measures the room in metres, the language layer writes the measurements down, and Jev, a decision model that answers typed questions with probabilities, picks one of eight&nbsp;actions.</p></div></header>
+    <ol class="bento">
+      <li class="stage st-perc">
+        <p class="stage-k"><span class="stage-n">1</span>Perceive<code>perception/</code></p>
+        <p>Depth Anything 3 turns the 500&nbsp;×&nbsp;500 frame into metric depth and OWLv2 finds the target. The depth is back-projected, levelled against the floor and cut into five sectors.</p>
+        <p class="chips"><span><i class="dot dot-depth"></i>DA3 · 0.15 s</span><span><i class="dot dot-det"></i>OWLv2 · 0.22 s</span></p>
+      </li>
+      <li class="stage st-lang">
+        <p class="stage-k"><span class="stage-n">2</span>Describe<code>language/</code></p>
+        <p>Free space per sector, a collision check for the next 0.25&nbsp;m step, the target's sector and distance, and the last three actions, written in four distance bins.</p>
+        <p class="bins" aria-label="The four distance bins"><span class="bin b0">under 0.5 m</span><span class="bin b1">0.5 to 1 m</span><span class="bin b2">1 to 2 m</span><span class="bin b3">over 2 m</span></p>
+      </li>
+      <li class="stage st-dec">
+        <p class="stage-k"><span class="stage-n">3</span>Act<code>decision/</code></p>
+        <p>Jev answers typed questions with probabilities: the target's object type once per episode, where the target is while it is out of view, and the next of eight actions.</p>
+        <p class="chips"><span><i class="dot dot-jev"></i>Jev · 0.34 s</span><span>8 actions</span></p>
+      </li>
+    </ol>
+
+    <figure class="card anatomy" id="anatomy" aria-labelledby="anat-cap">
+      <div class="anat-head">
+        <span class="fig-tag">Fig. 2</span>
+        <div class="tabs" role="tablist" aria-label="Recorded steps" id="anat-tabs"></div>
+      </div>
+      <div class="anat-grid">
+        <div class="anat-cell">
+          <div class="cell-head"><p class="col-lab">Camera</p>
+            <div class="seg" role="group" aria-label="View"><button type="button" data-view="rgb" aria-pressed="true">RGB</button><button type="button" data-view="depth" aria-pressed="false">Depth</button></div>
+          </div>
+          <div class="view anat-view" id="anat-view">
+            <img class="view-rgb" alt="" id="anat-rgb">
+            <img class="view-depth" alt="" id="anat-depth">
+            <svg class="view-overlay" id="anat-overlay" viewBox="0 0 500 500" preserveAspectRatio="none" aria-hidden="true"></svg>
+            <span class="readout" id="anat-readout" hidden></span>
+          </div>
+          <p class="cell-note" id="anat-viewnote">Hover the frame to read DA3's metric depth at that point.</p>
+        </div>
+        <div class="anat-cell">
+          <div class="cell-head"><p class="col-lab">Top-down: what the five sectors measure</p></div>
+          <div class="bev-wrap"><canvas class="bev-canvas" id="bev-canvas" aria-hidden="true"></canvas><svg class="bev" id="bev" role="img" aria-label="Top-down view of obstacles, the five sectors and their free distance"></svg></div>
+          <p class="cell-note bev-key"><span class="k k-obs"></span>obstacle <span class="k k-floor"></span>visible floor <span class="k k-step"></span>next 0.25 m step</p>
+        </div>
+        <div class="anat-cell">
+          <div class="cell-head"><p class="col-lab">Facts: exactly what Jev read</p></div>
+          <pre class="json" id="anat-json" tabindex="0" aria-label="The JSON state sent to Jev"></pre>
+        </div>
+        <div class="anat-cell">
+          <div class="cell-head"><p class="col-lab">Jev's answer</p></div>
+          <div class="probs probs-card" id="anat-probs"></div>
+          <div class="rule" id="anat-rule"></div>
+        </div>
+      </div>
+      <figcaption id="anat-cap"></figcaption>
+    </figure>
   </div>
 </section>
 
-<section id="example">
+<section class="sec" id="results">
   <div class="wrap">
-    <div class="reveal">
-      <div class="eyebrow">Example</div>
-      <h2>“I need a vessel to boil pasta”</h2>
-      <p class="lead">A <code>common_sense</code> episode. DepthJev resolves the instruction to <b style="color:var(--text)">Pot</b> and reaches it in 9 steps. Step through what the agent sees and what Jev reads.</p>
-    </div>
-    <div class="player reveal">
-      <div class="card viewer">
-        <div class="frame"><img id="frame" src="example/step_0.jpg" alt="Observation at the current step"><span id="badge" class="badge">step 0</span></div>
-        <div class="controls">
-          <button id="play" class="playbtn" aria-label="Play">▶</button>
-          <input id="scrub" type="range" min="0" max="9" value="0" aria-label="Step">
-          <span id="stepnum" class="mono">0 / 9</span>
-        </div>
-        <div class="dots" id="dots"></div>
+    <header class="sec-head"><span class="sec-num" aria-hidden="true">02</span><div><p class="kicker">Results</p><h2>Third of sixteen, without the image</h2><p class="sec-lede">EB-Navigation success rate of 16 agents. The baselines come from Table 3 of the EmbodiedBench paper, and all of them except text-only GPT-4o see the image. DepthJev's decision model reads only the text&nbsp;facts.</p></div></header>
+    <figure class="card" id="board-fig">
+      <div class="chart-head">
+        <b id="board-title">Average over 300 episodes</b>
+        <div class="pills" role="group" aria-label="Subset" id="board-pills"></div>
       </div>
-      <div class="card decision">
-        <div>
-          <div class="eyebrow">Free space ahead</div>
-          <div class="sectors" id="sectors" style="margin-top:12px"><div></div><div></div><div></div><div></div><div></div></div>
-          <div class="sector-l"><span>far L</span><span>left</span><span>center</span><span>right</span><span>far R</span></div>
-        </div>
-        <div>
-          <div class="eyebrow">Jev decision</div>
-          <div class="act" id="act">move_ahead</div>
-          <div class="meter" style="margin-top:10px"><i id="meter" style="width:100%"></i></div>
-        </div>
-        <div class="kv">
-          <div><b id="kv-dist">2.70 m</b><span>pot distance</span></div>
-          <div><b id="kv-sector">center</b><span>pot sector</span></div>
-          <div><b id="kv-p">1.00</b><span>probability</span></div>
-          <div><b id="kv-tok">1,491</b><span>input tokens</span></div>
-        </div>
-      </div>
-    </div>
-    <div class="card term reveal" style="margin-top:20px">
-      <div class="bar"><i></i><i></i><i></i><span id="facts-name">facts · step 0</span></div>
-      <pre id="facts-json"></pre>
-    </div>
+      <div class="board" id="board" role="list"></div>
+      <div class="legend"><span><i class="sw sw-ours"></i>DepthJev, text facts only</span><span><i class="sw sw-base"></i>Baseline with the image</span><span><i class="tag-mini">text only</i>Baseline without the image</span></div>
+      <details class="table-view"><summary>Show as a table</summary><div class="table-scroll" id="board-table"></div></details>
+    </figure>
   </div>
 </section>
 
-<section id="results">
+<section class="sec" id="runs">
   <div class="wrap">
-    <div class="reveal">
-      <div class="eyebrow">Results</div>
-      <h2>Beats vision models, without vision</h2>
-      <p class="lead">Success rate on all 300 EB-Navigation episodes. Every other agent passes the image to its decision model; DepthJev passes only text facts.</p>
-    </div>
-    <div class="card board reveal" id="board">
-      <div class="row"><div class="name">GPT-4o<small>image + text</small></div><div class="track"><div class="fill" data-w="57.7"></div></div><div class="val">57.7</div></div>
-      <div class="row"><div class="name">Gemini-2.0-flash<small>image + text</small></div><div class="track"><div class="fill" data-w="48.7"></div></div><div class="val">48.7</div></div>
-      <div class="row us"><div class="name">DepthJev (ours)<small>text facts only</small></div><div class="track"><div class="fill" data-w="46.7"></div></div><div class="val">46.7</div></div>
-      <div class="row"><div class="name">Claude-3.5-Sonnet<small>image + text</small></div><div class="track"><div class="fill" data-w="44.7"></div></div><div class="val">44.7</div></div>
-      <div class="row"><div class="name">InternVL2.5-78B<small>image + text</small></div><div class="track"><div class="fill" data-w="30.7"></div></div><div class="val">30.7</div></div>
-      <div class="row"><div class="name">Qwen2-VL-72B<small>image + text</small></div><div class="track"><div class="fill" data-w="21.2"></div></div><div class="val">21.2</div></div>
-      <div class="row"><div class="name">GPT-4o<small>text only</small></div><div class="track"><div class="fill" data-w="17.4"></div></div><div class="val">17.4</div></div>
-      <p class="note">Baselines from Table 3 of the EmbodiedBench paper.</p>
-    </div>
-
-    <div class="grid2">
-      <div class="card panel reveal">
-        <h3>Per subset <span>success rate</span></h3>
-        <div class="sub-row"><span>base</span><div class="track"><div class="fill" data-w="53.3"></div></div><span class="v">32/60</span></div>
-        <div class="sub-row"><span>common_sense</span><div class="track"><div class="fill" data-w="51.7"></div></div><span class="v">31/60</span></div>
-        <div class="sub-row"><span>complex_instr.</span><div class="track"><div class="fill" data-w="50"></div></div><span class="v">30/60</span></div>
-        <div class="sub-row"><span>visual_appear.</span><div class="track"><div class="fill" data-w="36.7"></div></div><span class="v">22/60</span></div>
-        <div class="sub-row"><span>long_horizon</span><div class="track"><div class="fill" data-w="41.7"></div></div><span class="v">25/60</span></div>
-      </div>
-      <div class="card panel reveal">
-        <h3>One step, 0.76 s <span>mean on one H100</span></h3>
-        <div class="stack" id="stack">
-          <div data-w="19.7" style="background:#38bdf8">DA3</div>
-          <div data-w="28.9" style="background:#a78bfa">OWLv2</div>
-          <div data-w="44.7" style="background:#f472b6">Jev</div>
-          <div data-w="6.6" style="background:#5d6780"></div>
+    <header class="sec-head"><span class="sec-num" aria-hidden="true">03</span><div><p class="kicker">Examples</p><h2>Six runs, replayed step by step</h2><p class="sec-lede">The frame the robot saw, the depth DA3 measured, the box OWLv2 found, the facts Jev read and the action it chose, all recorded during the full evaluation. The top-down path is rebuilt from the actions and matches the simulator's distance to the target at every step. Runs play on their own; click any action to&nbsp;inspect&nbsp;it.</p></div></header>
+    <div class="cases" id="cases" role="group" aria-label="Recorded runs"></div>
+    <div class="theater card" id="theater">
+      <div class="th-stage">
+        <div class="view th-view" id="th-view">
+          <img class="view-rgb" alt="" id="th-rgb">
+          <img class="view-depth" alt="" id="th-depth">
+          <svg class="view-overlay" id="th-overlay" viewBox="0 0 500 500" preserveAspectRatio="none" aria-hidden="true"></svg>
+          <div class="split" id="th-split" role="slider" tabindex="0" aria-label="Drag to compare the camera frame with the depth" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50"><i></i></div>
+          <span class="view-tag tag-l">RGB</span><span class="view-tag tag-r">DA3 depth</span>
+          <span class="hud" id="th-hud"></span>
         </div>
-        <div class="legend">
-          <div><span><i style="background:#38bdf8"></i>Depth Anything 3</span><b>0.15 s</b></div>
-          <div><span><i style="background:#a78bfa"></i>OWLv2 detection</span><b>0.22 s</b></div>
-          <div><span><i style="background:#f472b6"></i>Jev decision</span><b>0.34 s</b></div>
-          <div><span><i style="background:#5d6780"></i>Rest of the step</span><b>0.05 s</b></div>
-        </div>
+        <p class="th-caption" id="th-caption" aria-live="polite"></p>
       </div>
-    </div>
-
-  </div>
-</section>
-
-<section id="thanks" style="padding-top:0">
-  <div class="wrap">
-    <div class="reveal">
-      <div class="eyebrow">Built on</div>
-      <div class="thanks">
-        <a href="https://github.com/EmbodiedBench/EmbodiedBench">EmbodiedBench<span>benchmark</span></a>
-        <a href="https://github.com/ByteDance-Seed/Depth-Anything-3">Depth Anything 3<span>metric depth</span></a>
-        <a href="https://huggingface.co/google/owlv2-base-patch16-ensemble">OWLv2<span>detection</span></a>
-        <a href="https://docs.typesafe.ai">TypeSafe Jev<span>decision model</span></a>
-        <a href="https://ai2thor.allenai.org">AI2-THOR<span>simulator</span></a>
+      <div class="th-side">
+        <p class="meta" id="th-meta"></p>
+        <p class="th-q" id="th-q"></p>
+        <p class="th-res" id="th-res"></p>
+        <div class="th-map-wrap"><canvas class="th-map" id="th-map" aria-label="Top-down map of the run"></canvas><span class="map-note" id="th-mapnote"></span></div>
+        <div class="th-dist"><svg id="th-dist" role="img" aria-label="Distance to the target at every step"></svg></div>
+        <div class="probs probs-card th-probs" id="th-probs"></div>
+      </div>
+      <div class="th-foot">
+        <div class="th-foothead"><p class="col-lab">Actions</p><button class="pill-btn light" id="th-play" type="button" aria-pressed="true"><svg class="i-pause"><use href="#i-pause"/></svg><svg class="i-play"><use href="#i-play"/></svg><span>Pause</span></button></div>
+        <ol class="chain" id="th-chain" aria-label="Actions of the run"></ol>
       </div>
     </div>
   </div>
 </section>
 
-<footer>
+<section class="sec" id="all">
   <div class="wrap">
-    <span>🧭 DepthJev · Apache-2.0</span>
-    <a href="https://github.com/ZJUCQR/DepthJev">github.com/ZJUCQR/DepthJev</a>
+    <header class="sec-head"><span class="sec-num" aria-hidden="true">04</span><div><p class="kicker">Every episode</p><h2>All 300 episodes at a glance</h2><p class="sec-lede">EB-Navigation asks for the same 60 scenes and targets in five instruction styles, so each column below is one scene and target, and each square is one episode. Twelve scenes are solved under all five instructions and 22 under none: the scene decides more than the&nbsp;wording.</p></div></header>
+    <div class="filters" id="all-pills" role="group" aria-label="Instruction style"></div>
+    <figure class="card atlas-fig">
+      <div class="atlas-wrap">
+        <div class="atlas" id="atlas" role="grid" aria-label="300 episodes: rows are instruction styles, columns are scenes"></div>
+        <div class="atlas-side" id="atlas-side"></div>
+      </div>
+      <div class="legend"><span><i class="sw sw-ok"></i><svg class="lg-ic"><use href="#i-check"/></svg>Reached within 1 m</span><span><i class="sw sw-fail"></i><svg class="lg-ic"><use href="#i-x"/></svg>Not reached in 20 steps</span><span class="muted">Hover or tap a square for its instruction and path.</span></div>
+    </figure>
+    <figure class="card curves-fig">
+      <div class="chart-head"><b>Distance to the target, step by step</b><span class="chart-sub" id="curves-sub"></span></div>
+      <div class="curves-wrap"><canvas id="curves" aria-label="Distance to the target over the steps of every episode"></canvas></div>
+      <div class="legend"><span><i class="ln ln-ok"></i>Reached</span><span><i class="ln ln-fail"></i>Not reached</span><span><i class="ln ln-thr"></i>1 m: success</span></div>
+      <details class="table-view"><summary>Show as a table</summary><div class="table-scroll" id="subset-table"></div></details>
+    </figure>
+  </div>
+</section>
+
+<section class="sec" id="speed">
+  <div class="wrap">
+    <header class="sec-head"><span class="sec-num" aria-hidden="true">05</span><div><p class="kicker">Latency</p><h2>Fast enough for a robot</h2><p class="sec-lede">Mean server time per step on one H100. The three models run one after the other, and Jev's answer is a network request. Three runs sharing one GPU still finish a step in about a&nbsp;second.</p></div></header>
+    <figure class="card" id="latency-fig">
+      <div class="legend legend-top" id="latency-legend"></div>
+      <div class="latency" id="latency"></div>
+      <div class="lat-axis" id="lat-axis" aria-hidden="true"></div>
+      <details class="table-view"><summary>Show as a table</summary><div class="table-scroll" id="latency-table"></div></details>
+    </figure>
+  </div>
+</section>
+
+<section class="sec" id="failures">
+  <div class="wrap">
+    <header class="sec-head"><span class="sec-num" aria-hidden="true">06</span><div><p class="kicker">Limits</p><h2>Where it fails</h2><p class="sec-lede">160 episodes end without reaching the target. The largest group starts in perception: the target is rarely detected, or another object is taken for&nbsp;it.</p></div></header>
+    <div class="fail-grid">
+      <figure class="card"><div class="fails" id="fails"></div></figure>
+      <ul class="notes">
+        <li><b>Detection.</b> The largest group includes 17 <code>visual_appearance</code> episodes where Jev picked the wrong object type from a description of looks. Adding “trash can” and “bin” as detector queries took GarbageCan from 0/5 to 5/5 on a development sample.</li>
+        <li><b>Action constraints.</b> Writing a constraint into the action option itself (“NOT USEFUL NOW: the camera already looks 30 degrees down”) stopped repeated <code>look_down</code> better than a general rule.</li>
+        <li><b>Scene difficulty.</b> Across the five instruction styles, the same 12 scenes always succeed and the same 22 always fail. <code>long_horizon</code> also turns the start pose by 180°.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="code">
+  <div class="wrap">
+    <header class="sec-head"><span class="sec-num" aria-hidden="true">07</span><div><p class="kicker">Code</p><h2>The code follows the pipeline</h2><p class="sec-lede">One sub-package per stage, each importing only the stages before it. The server wraps the step for EmbodiedBench, and the evaluation runs in its own Python&nbsp;3.9 environment.</p></div></header>
+    <div class="code-grid">
+      <div class="tree card" id="tree"></div>
+      <div class="quick">
+        <div class="codebox"><div class="codebox-head"><span class="dots3"><i></i><i></i><i></i></span><span>quick start</span><button class="copy" type="button" data-copy="quick">Copy</button></div><pre id="quick"><span class="c"># clone with the pinned EmbodiedBench and Depth Anything 3</span>
+git clone --recursive https://github.com/ZJUCQR/DepthJev.git
+cd DepthJev
+
+<span class="c"># one requirements file for both environments</span>
+pip install -r requirements.txt
+
+<span class="c"># smoke test with 3 episodes, then all 300</span>
+bash scripts/run.sh
+bash scripts/run.sh full --sets all --ratio 1</pre></div>
+        <p class="quick-note">The two conda environments, the model checkpoints and the Jev key are set up as described in the <a href="https://github.com/ZJUCQR/DepthJev#getting-started">README</a>.</p>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer class="night foot" id="cite">
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <p class="kicker">Cite</p>
+        <h2 class="foot-title">Use DepthJev in your work</h2>
+        <div class="bib"><div class="codebox-head"><span>BibTeX</span><button class="copy" type="button" data-copy="bibtex">Copy</button></div><pre id="bibtex">@misc{depthjev2026,
+  title        = {DepthJev: Turning Depth into Text for Embodied Navigation},
+  author       = {ZJUCQR},
+  year         = {2026},
+  howpublished = {\url{https://github.com/ZJUCQR/DepthJev}}
+}</pre></div>
+      </div>
+      <div class="foot-side">
+        <p class="kicker">Built on</p>
+        <ul class="built">
+          <li><a href="https://github.com/EmbodiedBench/EmbodiedBench">EmbodiedBench</a><span>benchmark</span></li>
+          <li><a href="https://github.com/ByteDance-Seed/Depth-Anything-3">Depth Anything 3</a><span>metric depth</span></li>
+          <li><a href="https://huggingface.co/google/owlv2-base-patch16-ensemble">OWLv2</a><span>detection</span></li>
+          <li><a href="https://docs.typesafe.ai">TypeSafe Jev</a><span>decision model</span></li>
+          <li><a href="https://ai2thor.allenai.org">AI2-THOR</a><span>simulator</span></li>
+        </ul>
+      </div>
+    </div>
+    <p class="provenance">All DepthJev numbers come from one full EB-Navigation run (300 episodes) on an H100; baselines are Table 3 of the EmbodiedBench paper. Frames, boxes, facts and Jev's probabilities are the recorded ones. The depth maps shown here were recomputed on CPU with DepthJev's own DA3 pipeline and agree with the recorded free-space measurements within 2&nbsp;cm. Top-down paths are rebuilt from the actions on AI2-THOR's 0.1&nbsp;m grid and reproduce the simulator's distance to the target at every step.</p>
+    <p class="foot-links"><a class="brand" href="#top"><svg aria-hidden="true"><use href="#i-logo"/></svg>DepthJev</a><span>Apache-2.0</span><a href="https://github.com/ZJUCQR/DepthJev"><svg><use href="#i-github"/></svg>ZJUCQR/DepthJev</a></p>
   </div>
 </footer>
 
-<script>
-(() => {
-  const nav = document.getElementById('nav');
-  addEventListener('scroll', () => nav.classList.toggle('scrolled', scrollY > 10), { passive: true });
-
-  // hero: a drifting depth point field
-  const cv = document.getElementById('field'), ctx = cv.getContext('2d');
-  let W, H, pts = [];
-  const resize = () => {
-    W = cv.width = cv.offsetWidth * devicePixelRatio;
-    H = cv.height = cv.offsetHeight * devicePixelRatio;
-    pts = Array.from({ length: Math.min(220, Math.floor(W * H / 9000)) }, () => ({
-      x: (Math.random() - .5) * 2, y: Math.random() * .8 + .2, z: Math.random()
-    }));
-  };
-  resize(); addEventListener('resize', resize);
-  const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const draw = () => {
-    ctx.clearRect(0, 0, W, H);
-    for (const p of pts) {
-      if (!still) { p.z -= .0025; if (p.z <= .02) { p.z = 1; p.x = (Math.random() - .5) * 2; } }
-      const s = 1 / p.z, x = W / 2 + p.x * W * .25 * s, y = H * .38 + p.y * H * .12 * s;
-      if (x < 0 || x > W || y > H) continue;
-      const hue = 190 + (1 - p.z) * 120, r = Math.max(.6, 2.2 * (1 - p.z)) * devicePixelRatio;
-      ctx.fillStyle = `hsla(${hue},90%,70%,${(1 - p.z) * .9})`;
-      ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill();
-    }
-    if (!still) requestAnimationFrame(draw);
-  };
-  draw();
-
-  // counters
-  const count = el => {
-    const to = +el.dataset.count, dec = el.dataset.dec ?? 1, pre = el.dataset.prefix || '', suf = el.dataset.suffix || '';
-    const t0 = performance.now(), dur = 1400;
-    const tick = t => {
-      const k = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - k, 3);
-      el.textContent = pre + (to * e).toFixed(dec) + suf;
-      if (k < 1) requestAnimationFrame(tick);
-    };
-    requestAnimationFrame(tick);
-  };
-  document.querySelectorAll('[data-count]').forEach(count);
-
-  // reveal and animate on scroll
-  const io = new IntersectionObserver(entries => entries.forEach(en => {
-    if (!en.isIntersecting) return;
-    const el = en.target;
-    el.classList.add('in');
-    el.querySelectorAll('.fill[data-w], .meter i[data-w]').forEach(f => f.style.width = f.dataset.w + '%');
-    el.querySelectorAll('.stack div[data-w]').forEach(f => f.style.width = f.dataset.w + '%');
-    el.querySelectorAll('.sectors div[data-h]').forEach(f => f.style.height = f.dataset.h + '%');
-    io.unobserve(el);
-  }), { threshold: .2 });
-  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
-
-  // episode player
-  fetch('example/episode.json').then(r => r.json()).then(ep => {
-    const $ = id => document.getElementById(id);
-    const width = { 'under 0.5 m': 15, '0.5 to 1 m': 35, '1 to 2 m': 62, 'over 2 m': 100 };
-    const keys = ['far_left', 'left', 'center', 'right', 'far_right'];
-    const esc = t => t.replace(/&/g, '&amp;').replace(/</g, '&lt;');
-    const pretty = o => esc(JSON.stringify(o, null, 2))
-      .replace(/("[^"]+")(:)/g, '<span class="k">$1</span>$2')
-      .replace(/: ("[^"]*")/g, ': <span class="s">$1</span>')
-      .replace(/: (true|false|\d+(\.\d+)?)/g, ': <span class="b">$1</span>');
-    const dots = $('dots');
-    for (let i = 0; i <= 9; i++) {
-      const b = document.createElement('button');
-      b.textContent = i === 9 ? '✓' : i;
-      b.onclick = () => { stop(); show(i); };
-      dots.appendChild(b);
-    }
-    for (let i = 0; i <= 9; i++) new Image().src = `example/step_${i}.jpg`;
-    let cur = 0, timer = null;
-    const show = i => {
-      cur = i;
-      $('frame').src = `example/step_${i}.jpg`;
-      $('scrub').value = i;
-      $('stepnum').textContent = `${i} / 9`;
-      [...dots.children].forEach((b, k) => b.classList.toggle('on', k === i));
-      const done = i === 9, st = ep.steps[Math.min(i, 8)];
-      $('badge').textContent = done ? 'success · within 1 m' : `step ${i}`;
-      $('badge').classList.toggle('win', done);
-      if (done) {
-        $('act').textContent = 'reached ✓';
-        $('act').style.color = 'var(--ok)';
-        $('meter').style.width = '100%';
-        $('facts-name').textContent = 'episode finished after 9 actions';
-        $('facts-json').innerHTML = pretty({ task_success: 1, num_steps: 9, target: ep.target });
-        return;
-      }
-      $('act').textContent = st.action;
-      $('act').style.color = '';
-      $('meter').style.width = st.p * 100 + '%';
-      $('kv-dist').textContent = st.dist.toFixed(2) + ' m';
-      $('kv-sector').textContent = st.sector;
-      $('kv-p').textContent = st.p.toFixed(2);
-      $('kv-tok').textContent = st.tokens.toLocaleString('en-US');
-      const free = st.facts.free_distance_ahead_by_sector;
-      [...$('sectors').children].forEach((d, k) => {
-        d.style.height = (width[free[keys[k]]] || 10) + '%';
-        d.classList.toggle('tgt', keys[k] === st.sector);
-      });
-      $('facts-name').textContent = `facts · step ${i}`;
-      $('facts-json').innerHTML = pretty(st.facts);
-    };
-    const stop = () => { clearInterval(timer); timer = null; $('play').textContent = '▶'; };
-    $('play').onclick = () => {
-      if (timer) return stop();
-      if (cur === 9) show(0);
-      $('play').textContent = '❚❚';
-      timer = setInterval(() => { if (cur >= 9) stop(); else show(cur + 1); }, 1300);
-    };
-    $('scrub').oninput = e => { stop(); show(+e.target.value); };
-    show(0);
-    new IntersectionObserver((en, o) => {
-      if (en[0].isIntersecting && !matchMedia('(prefers-reduced-motion: reduce)').matches) { $('play').click(); o.disconnect(); }
-    }, { threshold: .5 }).observe($('frame'));
-  });
-})();
-</script>
+<div class="tip" id="tip" role="tooltip" hidden></div>
+<script src="assets/site.js" defer></script>
 </body>
 </html>
