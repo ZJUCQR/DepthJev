@@ -11,10 +11,10 @@ jobs:
         with:
           python-version: "3.11"
       - run: pip install ruff
-      - run: ruff check depthjev
-      - run: ruff format --check depthjev
+      - run: ruff check geolingo
+      - run: ruff format --check geolingo
       - run: bash -n scripts/*.sh
-  # depthjev/evaluation runs in the Python 3.9 evaluation environment with the standard library only
+  # geolingo/evaluation runs in the Python 3.9 evaluation environment with the standard library only
   py39:
     runs-on: ubuntu-latest
     steps:
@@ -22,5 +22,5 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.9"
-      - run: python -m py_compile depthjev/__init__.py depthjev/evaluation/*.py
-      - run: python -m depthjev.evaluation.report --help
+      - run: python -m py_compile geolingo/__init__.py geolingo/evaluation/*.py
+      - run: python -m geolingo.evaluation.report --help

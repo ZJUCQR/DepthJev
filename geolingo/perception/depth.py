@@ -8,7 +8,7 @@ from __future__ import annotations
 import numpy as np
 from PIL import Image
 
-from depthjev.perception.geometry import DA3_PROCESS_RES, FOV_DEG, canonical_to_metric, focal_px
+from geolingo.perception.geometry import DA3_PROCESS_RES, FOV_DEG, canonical_to_metric, focal_px
 
 
 class DepthEstimator:

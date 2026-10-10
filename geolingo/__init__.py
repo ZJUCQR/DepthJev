@@ -1,4 +1,4 @@
-"""DepthJev: an EB-Navigation agent that turns metric depth and detections into text facts for the Jev decision model.
+"""GeoLingo: an EB-Navigation agent that turns metric depth and detections into text facts for the Jev decision model.
 
 One step runs through three layers, each a sub-package that only imports the layers above it in this list:
 

@@ -1,12 +1,11 @@
 <div align="center">
 
-<h1>🧭 DepthJev</h1>
+<h1>🧭 GeoLingo</h1>
 
-<h3>将深度感知转化为文本的具身导航</h3>
+<h3>将几何翻译为语言的具身导航</h3>
 
 <p>
-  <a href="https://zjucqr.github.io/DepthJev/"><img src="https://img.shields.io/badge/project-page-0ea5e9?logo=githubpages&logoColor=white" alt="Project page"></a>
-  <a href="https://github.com/ZJUCQR/DepthJev/actions/workflows/lint.yml"><img src="https://github.com/ZJUCQR/DepthJev/actions/workflows/lint.yml/badge.svg" alt="lint"></a>
+  <a href="https://github.com/ZJUCQR/GeoLingo/actions/workflows/lint.yml"><img src="https://github.com/ZJUCQR/GeoLingo/actions/workflows/lint.yml/badge.svg" alt="lint"></a>
   <img src="https://img.shields.io/badge/python-3.11-3776AB?logo=python&logoColor=white" alt="Python 3.11">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-green" alt="Apache-2.0"></a>
   <img src="https://img.shields.io/badge/EB--Navigation-46.7%25-orange" alt="EB-Navigation 成功率 46.7%">
@@ -14,7 +13,7 @@
 </p>
 
 <p>
-  <a href="https://zjucqr.github.io/DepthJev/"><b>项目主页</b></a> ·
+  <a href="https://zjucqr.github.io/GeoLingo/"><b>项目主页</b></a> ·
   <a href="#how-it-works">工作原理</a> ·
   <a href="#getting-started">快速开始</a> ·
   <a href="#results">实验结果</a> ·
@@ -26,10 +25,10 @@
 </div>
 
 <p align="center">
-  <img src="assets/teaser.gif" width="100%" alt="DepthJev 在一个 EB-Navigation 回合上的记录：带检测框的相机画面、按五个扇区扫过的 Depth Anything 3 米制深度，以及每一步 Jev 读到的文本事实">
+  <img src="assets/teaser.gif" width="100%" alt="GeoLingo 在一个 EB-Navigation 回合上的记录：带检测框的相机画面、按五个扇区扫过的 Depth Anything 3 米制深度，以及每一步 Jev 读到的文本事实">
 </p>
 
-**DepthJev** 是 [EmbodiedBench](https://github.com/EmbodiedBench/EmbodiedBench) EB-Navigation 上的导航智能体。它用 **Depth Anything 3** 把每帧 RGB 转成米制深度，用 **OWLv2** 检测目标，再把几何信息写成简短的文字事实。**Jev** 决策模型只读这些事实、从不看图像，据此选出下一个动作。
+**GeoLingo** 是 [EmbodiedBench](https://github.com/EmbodiedBench/EmbodiedBench) EB-Navigation 上的导航智能体。它用 **Depth Anything 3** 把每帧 RGB 转成米制深度，用 **OWLv2** 检测目标，再把几何信息写成简短的文字事实。**Jev** 决策模型只读这些事实、从不看图像，据此选出下一个动作。
 
 ## ✨ 亮点
 
@@ -43,20 +42,20 @@
 ## 🏗️ 工作原理
 
 <p align="center">
-  <img src="assets/how-it-works.png" width="100%" alt="DepthJev 流程：RGB 观测、任务与历史 → 米制深度与目标检测 → 文本事实 → Jev 导航动作 → 下一次观测">
+  <img src="assets/how-it-works.png" width="100%" alt="GeoLingo 流程：RGB 观测、任务与历史 → 米制深度与目标检测 → 文本事实 → Jev 导航动作 → 下一次观测">
 </p>
 
-每一步分三个阶段，每个阶段对应 [`depthjev/`](depthjev) 下的一个子包：
+每一步分三个阶段，每个阶段对应 [`geolingo/`](geolingo) 下的一个子包：
 
-1. **👁️ 感知**（[`perception/`](depthjev/perception)）。Depth Anything 3 估计米制深度，OWLv2 定位目标。深度图经反投影、按地面校平后切成五个扇区。
-2. **📝 描述**（[`language/`](depthjev/language)）。可走空间、目标距离和动作历史整理成文本事实，距离分为四档：under 0.5 m、0.5 to 1 m、1 to 2 m 和 over 2 m。
-3. **🎯 行动**（[`decision/`](depthjev/decision)）。Jev 读取事实，从八个导航动作中选一个，再根据新观测重复。
+1. **👁️ 感知**（[`perception/`](geolingo/perception)）。Depth Anything 3 估计米制深度，OWLv2 定位目标。深度图经反投影、按地面校平后切成五个扇区。
+2. **📝 描述**（[`language/`](geolingo/language)）。可走空间、目标距离和动作历史整理成文本事实，距离分为四档：under 0.5 m、0.5 to 1 m、1 to 2 m 和 over 2 m。
+3. **🎯 行动**（[`decision/`](geolingo/decision)）。Jev 读取事实，从八个导航动作中选一个，再根据新观测重复。
 
 ### 🍝 示例
 
-“*I need a vessel to boil pasta for dinner. Can you navigate to that object and stay close?*” DepthJev 把目标解析为 **Pot**，9 步到达。框是 OWLv2 的检测结果，距离来自 DA3。
+“*I need a vessel to boil pasta for dinner. Can you navigate to that object and stay close?*” GeoLingo 把目标解析为 **Pot**，9 步到达。框是 OWLv2 的检测结果，距离来自 DA3。
 
-<p align="center"><img src="assets/example-pot.jpg" width="100%" alt="DepthJev 9 步到达锅具：第 0、3、6、7、8 步画面，标出检测到的锅和距离"></p>
+<p align="center"><img src="assets/example-pot.jpg" width="100%" alt="GeoLingo 9 步到达锅具：第 0、3、6、7、8 步画面，标出检测到的锅和距离"></p>
 
 <details>
 <summary><b>第 0 步 Jev 读到的内容</b></summary>
@@ -102,21 +101,19 @@
 
 ## 🚀 快速开始
 
-DepthJev 用两个 Python 环境：**服务端**（Python 3.11，一张 GPU）跑模型，**评测端**（Python 3.9，CPU）跑 EmbodiedBench 和 AI2-THOR。所有命令都在仓库根目录执行。
+GeoLingo 用两个 Python 环境：**服务端**（Python 3.11，一张 GPU）跑模型，**评测端**（Python 3.9，CPU）跑 EmbodiedBench 和 AI2-THOR。所有命令都在仓库根目录执行。
 
-**1. 克隆仓库及锁定版本的依赖**
+**1. 克隆仓库**
 
 ```bash
-git clone --recursive https://github.com/ZJUCQR/DepthJev.git && cd DepthJev
+git clone https://github.com/ZJUCQR/GeoLingo.git && cd GeoLingo
 ```
-
-EmbodiedBench 和 Depth Anything 3 是 `third_party/` 下的 git 子模块，锁定在复现结果所用的提交上。已经克隆过的仓库执行 `git submodule update --init`。
 
 **2. 服务端环境**
 
 ```bash
-conda create -y -p envs/depthjev python=3.11 pip
-conda activate ./envs/depthjev
+conda create -y -p envs/geolingo python=3.11 pip
+conda activate ./envs/geolingo
 pip install -r requirements.txt
 hf download depth-anything/DA3METRIC-LARGE --local-dir checkpoints/DA3METRIC-LARGE
 hf download google/owlv2-base-patch16-ensemble --local-dir checkpoints/owlv2-base-patch16-ensemble
@@ -125,12 +122,13 @@ hf download google/owlv2-base-patch16-ensemble --local-dir checkpoints/owlv2-bas
 **3. 评测端环境**
 
 ```bash
-conda create -y -p envs/depthjev-eval python=3.9.21 pip
-conda activate ./envs/depthjev-eval
+conda create -y -p envs/geolingo-eval python=3.9.21 pip
+conda activate ./envs/geolingo-eval
 pip install -r requirements.txt
+pip install --no-deps -e /path/to/EmbodiedBench
 ```
 
-两个环境共用同一个 `requirements.txt`，由环境标记按 Python 版本选择各自的依赖。
+两个环境共用同一个 `requirements.txt`，由环境标记按 Python 版本选择各自的依赖。EB-Navigation 由 [EmbodiedBench](https://github.com/EmbodiedBench/EmbodiedBench) 提供，细节见它的仓库。脚本通过这次安装找到你克隆的 EmbodiedBench，也可以用 `EMBODIEDBENCH_DIR` 指定。
 
 **4. AI2-THOR 无头渲染**
 
@@ -161,23 +159,11 @@ bash scripts/run.sh full --sets all --ratio 1 --parallel  # 每个子集一个�
 | `--gpus` | 可见的 GPU | 服务用的 CUDA 设备 |
 | `--parallel` | 关 | 每个子集一个服务 + 一个评测 |
 
-每个请求记录在 `logs/RUN_NAME.jsonl`（同目录下还有服务端和评测端的输出），EmbodiedBench 把各回合结果（含画面）写到 `third_party/EmbodiedBench/running/eb_nav/depthjev_RUN_NAME/`。运行结束时会打印报告，之后可以用 `python -m depthjev.evaluation.report RUN_NAME --ratio R` 从这些文件重新生成。
-
-<details>
-<summary><b>服务和评测分两个终端跑</b></summary>
-
-```bash
-DEPTHJEV_RUN_NAME=dev bash scripts/server.sh
-SERVER_URL=http://127.0.0.1:23333/process bash scripts/eval.sh exp_name=dev eval_sets=[base] down_sample_ratio=0.05
-```
-
-服务默认监听 `127.0.0.1`。评测在另一台机器上时，用 `bash scripts/server.sh --host 0.0.0.0` 启动服务，并把 `SERVER_URL` 指向服务所在机器。
-
-</details>
+每个请求记录在 `logs/RUN_NAME.jsonl`（同目录下还有服务端和评测端的输出），EmbodiedBench 把各回合结果（含画面）写到 EmbodiedBench 目录下的 `running/eb_nav/geolingo_RUN_NAME/`。运行结束时会打印报告，之后可以用 `python -m geolingo.evaluation.report RUN_NAME --ratio R` 从这些文件重新生成。
 
 ## ⚙️ 配置
 
-仓库没有配置文件。服务端设置都是 `python -m depthjev.server` 的命令行参数（见 `bash scripts/server.sh --help`），每个参数也可以用环境变量设置：`--jev-model` 对应 `DEPTHJEV_JEV_MODEL`，其余依此类推。
+仓库没有配置文件。服务端设置都是 `python -m geolingo.server` 的命令行参数（见 `bash scripts/server.sh --help`），每个参数也可以用环境变量设置：`--jev-model` 对应 `GEOLINGO_JEV_MODEL`，其余依此类推。
 
 | 参数 | 默认值 | 说明 |
 | --- | --- | --- |
@@ -190,7 +176,7 @@ SERVER_URL=http://127.0.0.1:23333/process bash scripts/eval.sh exp_name=dev eval
 | `--host`、`--port` | `127.0.0.1`、`23333` | 服务监听地址 |
 | `--log-dir`、`--run-name` | `logs`、时间戳 | 请求日志为 `<log-dir>/<run-name>.jsonl` |
 
-脚本还会读取 `DEPTHJEV_SERVER_ENV` 和 `DEPTHJEV_EVAL_ENV` 这两个环境路径（默认 `envs/depthjev` 和 `envs/depthjev-eval`），以及 `DEPTHJEV_PORT`。
+脚本还会读取 `GEOLINGO_SERVER_ENV` 和 `GEOLINGO_EVAL_ENV` 这两个环境路径（默认 `envs/geolingo` 和 `envs/geolingo-eval`），以及 `GEOLINGO_PORT` 和 `EMBODIEDBENCH_DIR`。
 
 <a id="results"></a>
 
@@ -207,28 +193,11 @@ SERVER_URL=http://127.0.0.1:23333/process bash scripts/eval.sh exp_name=dev eval
 | long_horizon | 25/60 | 0.417 | 17.3 | 60/60 |
 | **全部** | **140/300** | **0.467** | 16.0 | 263/300 |
 
-<details>
-<summary><b>⏱️ 服务端耗时</b></summary>
-
-均值、p50 和 p90 对应单路运行，最后一列为三路共用一张 GPU，单位均为秒。
-
-| 阶段 | 均值 | p50 | p90 | 一卡三路均值 |
-| --- | :---: | :---: | :---: | :---: |
-| DA3 深度 | 0.15 | 0.13 | 0.23 | 0.27 |
-| OWLv2 检测 | 0.22 | 0.21 | 0.22 | 0.32 |
-| Jev 决策 | 0.34 | 0.27 | 0.51 | 0.38 |
-| 目标类型解析，每回合一次 | 0.82 | 0.61 | 1.63 | 1.42 |
-| **一步合计** | **0.76** | **0.64** | **1.04** | **1.06** |
-
-包含 AI2-THOR 软件渲染时，单路运行平均每回合约 21 秒。
-
-</details>
-
 ## 📁 项目结构
 
 ```
-DepthJev/
-├── depthjev/                # 智能体：每个子包对应一步中的一个阶段
+GeoLingo/
+├── geolingo/                # 智能体：每个子包对应一步中的一个阶段
 │   ├── perception/          # 👁️ 画面变成米制量
 │   │   ├── depth.py         #    Depth Anything 3 米制深度
 │   │   ├── detection.py     #    OWLv2 开放词表检测
@@ -249,7 +218,6 @@ DepthJev/
 │   ├── run.sh               # 端到端：服务、评测和报告，单路或 --parallel
 │   ├── server.sh            # 只起服务
 │   └── eval.sh              # 只跑评测
-├── third_party/             # git 子模块：EmbodiedBench、Depth-Anything-3
 ├── assets/                  # README 用图
 └── requirements.txt         # 两个环境共用，按 Python 版本选择
 ```
@@ -258,14 +226,14 @@ DepthJev/
 
 ## 📝 引用
 
-如果 DepthJev 对你的研究有帮助，请引用：
+如果 GeoLingo 对你的研究有帮助，请引用：
 
 ```bibtex
-@misc{depthjev2026,
-  title        = {DepthJev: Turning Depth into Text for Embodied Navigation},
+@misc{geolingo2026,
+  title        = {GeoLingo: Translating Geometry into Language for Embodied Navigation},
   author       = {ZJUCQR},
   year         = {2026},
-  howpublished = {\url{https://github.com/ZJUCQR/DepthJev}}
+  howpublished = {\url{https://github.com/ZJUCQR/GeoLingo}}
 }
 ```
 
@@ -279,4 +247,4 @@ DepthJev/
 
 ## 📄 许可证
 
-DepthJev 以 [Apache-2.0 许可证](LICENSE) 发布。
+GeoLingo 以 [Apache-2.0 许可证](LICENSE) 发布。

@@ -1,8 +1,8 @@
-"""Report one or more DepthJev runs: per-step latency from the server JSONL, per-subset success from the EmbodiedBench results, and a per-episode table with the target type Jev resolved from the instruction. From the repo root:
+"""Report one or more GeoLingo runs: per-step latency from the server JSONL, per-subset success from the EmbodiedBench results, and a per-episode table with the target type Jev resolved from the instruction. From the repo root:
 
-    python -m depthjev.evaluation.report <run_name> [<run_name> ...] [--ratio r]
+    python -m geolingo.evaluation.report <run_name> [<run_name> ...] [--ratio r]
 
-For each run it reads logs/<run_name>.jsonl and third_party/EmbodiedBench/running/eb_nav/depthjev_<run_name>/; several runs (e.g. one per subset with scripts/run.sh --parallel) are merged. It uses only the standard library and stays Python 3.9-compatible, because scripts/run.sh runs it in the evaluation environment.
+For each run it reads logs/<run_name>.jsonl and running/eb_nav/geolingo_<run_name>/ in the EmbodiedBench folder; several runs (e.g. one per subset with scripts/run.sh --parallel) are merged. It uses only the standard library and stays Python 3.9-compatible, because scripts/run.sh runs it in the evaluation environment.
 """
 
 import argparse
@@ -12,8 +12,9 @@ import os
 import statistics
 from pathlib import Path
 
+from geolingo.evaluation import embodiedbench_root
+
 REPO = Path(__file__).resolve().parents[2]
-EB_ROOT = REPO / "third_party" / "EmbodiedBench"
 SETS = ["base", "common_sense", "complex_instruction", "visual_appearance", "long_horizon"]
 
 
@@ -33,9 +34,13 @@ def load_rows(runs):
     return rows
 
 
+def episode_index(path):
+    return int(os.path.basename(path).split("_")[1])
+
+
 def result_files(run, subset):
-    pattern = EB_ROOT / "running/eb_nav" / f"depthjev_{run}" / subset / "results" / "episode_*_final_res.json"
-    return sorted(glob.glob(str(pattern)), key=lambda p: int(os.path.basename(p).split("_")[1]))
+    results = embodiedbench_root() / "running/eb_nav" / f"geolingo_{run}" / subset / "results"
+    return sorted(glob.glob(str(results / "episode_*_final_res.json")), key=episode_index)
 
 
 def load_results(runs):
@@ -100,10 +105,11 @@ def episode_table(rows, results, ratio):
             cur["steps"].append(r)
     every = round(1 / ratio) if 0 < ratio < 1 else 1
     truth = []
+    datasets = embodiedbench_root() / "embodiedbench/envs/eb_navigation/datasets"
     for s in SETS:
         if not results.get(s):
             continue
-        tasks = json.load(open(EB_ROOT / "embodiedbench/envs/eb_navigation/datasets" / f"{s}.json"))["tasks"]
+        tasks = json.load(open(datasets / f"{s}.json"))["tasks"]
         truth += [(s, t) for t in tasks[::every]]
     print(
         f"\n{'subset':20s}{'true':15s}{'resolved':15s}{'conf':>5s} {'ok':>2s} {'succ':>4s} {'steps':>5s} {'vis%':>5s} {'s/step':>6s}  instruction"
@@ -140,8 +146,8 @@ def episode_table(rows, results, ratio):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(
-        prog="python -m depthjev.evaluation.report",
-        description="Latency, success and per-episode tables of DepthJev runs.",
+        prog="python -m geolingo.evaluation.report",
+        description="Latency, success and per-episode tables of GeoLingo runs.",
     )
     parser.add_argument("runs", nargs="*", default=["full"], help="run names (logs/<run>.jsonl)")
     parser.add_argument("--ratio", type=float, default=1.0, help="the down_sample_ratio the runs used")

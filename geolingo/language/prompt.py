@@ -8,7 +8,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass, field
 
-from depthjev.language.actions import BY_ID, Action
+from geolingo.language.actions import BY_ID, Action
 
 _INSTRUCTION_RE = re.compile(
     r"## (?:Now the|The) human instruction is: (?P<instruction>.*?)\.(?=To achieve the task|\s*\n|\s*$)",
@@ -52,7 +52,7 @@ class ParsedPrompt:
         """Camera pitch accumulated from successful LookDown (+30) / LookUp (-30) actions.
 
         Every EB-Navigation episode starts at horizon 0 (all 300 tasks in
-        third_party/EmbodiedBench/embodiedbench/envs/eb_navigation/datasets/*.json have agentPose.horizon = 0).
+        EmbodiedBench's embodiedbench/envs/eb_navigation/datasets/*.json have agentPose.horizon = 0).
         Positive means looking down, matching AI2-THOR's ``cameraHorizon`` sign.
         """
         pitch = 0

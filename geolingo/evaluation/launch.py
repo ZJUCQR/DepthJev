@@ -1,8 +1,8 @@
-"""Run EmbodiedBench EB-Navigation against the DepthJev server without changing the EmbodiedBench repo.
+"""Run EmbodiedBench EB-Navigation against the GeoLingo server without changing the EmbodiedBench repo.
 
-It sets server_url (read by embodiedbench/planner/custom_model.py at import time), switches AI2-THOR to the Linux64 build when asked (EBNavEnv hard-codes CloudRendering, which needs a Vulkan driver; replacing the class in ai2thor.platform before EmbodiedBench imports it is enough), and runs embodiedbench.main the way python -m would, passing the remaining arguments through as hydra overrides. scripts/eval.sh is the normal entry point. It runs in the evaluation environment (Python 3.9), so this module must stay 3.9-compatible and must not import the rest of the package. By hand, from the repo root:
+It sets server_url (read by embodiedbench/planner/custom_model.py at import time), switches AI2-THOR to the Linux64 build when asked (EBNavEnv hard-codes CloudRendering, which needs a Vulkan driver; replacing the class in ai2thor.platform before EmbodiedBench imports it is enough), and runs embodiedbench.main the way python -m would, passing the remaining arguments through as hydra overrides. scripts/eval.sh is the normal entry point. It runs in the evaluation environment (Python 3.9), so this module must stay 3.9-compatible and must not import anything outside geolingo.evaluation. By hand, from the repo root:
 
-    python -m depthjev.evaluation.launch --server-url http://HOST:23333/process --platform Linux64 env=eb-nav model_name=depthjev model_type=custom exp_name=smoke eval_sets=[base] down_sample_ratio=0.05
+    python -m geolingo.evaluation.launch --server-url http://HOST:23333/process --platform Linux64 env=eb-nav model_name=geolingo model_type=custom exp_name=smoke eval_sets=[base] down_sample_ratio=0.05
 """
 
 import argparse
@@ -10,10 +10,8 @@ import importlib.util
 import os
 import sys
 import types
-from pathlib import Path
 
-REPO = Path(__file__).resolve().parents[2]
-EB_ROOT = REPO / "third_party" / "EmbodiedBench"
+from geolingo.evaluation import embodiedbench_root
 
 
 def stub_lmdeploy():
@@ -26,7 +24,7 @@ def stub_lmdeploy():
         return
 
     def unavailable(*args, **kwargs):
-        raise RuntimeError("lmdeploy is not installed; DepthJev runs EmbodiedBench with model_type=custom")
+        raise RuntimeError("lmdeploy is not installed; GeoLingo runs EmbodiedBench with model_type=custom")
 
     module = types.ModuleType("lmdeploy")
     module.pipeline = module.GenerationConfig = module.PytorchEngineConfig = unavailable
@@ -35,14 +33,14 @@ def stub_lmdeploy():
 
 def main():
     parser = argparse.ArgumentParser(
-        prog="python -m depthjev.evaluation.launch",
+        prog="python -m geolingo.evaluation.launch",
         description=__doc__,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument(
         "--server-url",
         default=os.environ.get("server_url"),
-        help="DepthJev endpoint, e.g. http://127.0.0.1:23333/process",
+        help="GeoLingo endpoint, e.g. http://127.0.0.1:23333/process",
     )
     parser.add_argument(
         "--platform",
@@ -62,8 +60,9 @@ def main():
             parser.error("--platform Linux64 needs DISPLAY (start Xvfb first, see scripts/eval.sh)")
 
     stub_lmdeploy()
-    os.chdir(EB_ROOT)  # embodiedbench.main opens embodiedbench/configs/<env>.yaml relative to the cwd
-    sys.path.insert(0, str(EB_ROOT))
+    eb_root = embodiedbench_root()
+    os.chdir(eb_root)  # embodiedbench.main opens embodiedbench/configs/<env>.yaml relative to the cwd
+    sys.path.insert(0, str(eb_root))
     sys.argv = [sys.argv[0]] + hydra_overrides
     # hydra resolves @hydra.main(config_path="./configs") relative to the *__main__* module's file, so
     # embodiedbench.main must run exactly as `python -m embodiedbench.main` does (importing it and

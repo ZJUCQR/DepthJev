@@ -8,9 +8,9 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass, field
 
-from depthjev.language.actions import MAX_EPISODE_STEPS
-from depthjev.language.prompt import HistoryItem
-from depthjev.perception.geometry import SECTOR_NAMES
+from geolingo.language.actions import MAX_EPISODE_STEPS
+from geolingo.language.prompt import HistoryItem
+from geolingo.perception.geometry import SECTOR_NAMES
 
 DISTANCE_BINS = ((0.5, "under 0.5 m"), (1.0, "0.5 to 1 m"), (2.0, "1 to 2 m"), (math.inf, "over 2 m"))
 CLEAR, BLOCKED, UNKNOWN = "clear", "blocked", "unknown"

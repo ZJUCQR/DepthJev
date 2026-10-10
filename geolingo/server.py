@@ -1,8 +1,8 @@
 """The HTTP server that EmbodiedBench talks to with model_type=custom.
 
-It follows third_party/EmbodiedBench/server.py: POST /process takes a multipart image file and a sentence form field and answers {"response": text}. Unlike the template, it always answers with HTTP 200 and a valid single-action plan, because the evaluator would otherwise retry an error forever. It also answers a repeated identical request from a cache, reports its state on GET /health, and writes one JSON line per request with the time spent in each stage.
+It follows the server.py template in EmbodiedBench: POST /process takes a multipart image file and a sentence form field and answers {"response": text}. Unlike the template, it always answers with HTTP 200 and a valid single-action plan, because the evaluator would otherwise retry an error forever. It also answers a repeated identical request from a cache, reports its state on GET /health, and writes one JSON line per request with the time spent in each stage.
 
-Every command-line flag can also be set through an environment variable: --jev-model through DEPTHJEV_JEV_MODEL, --port through DEPTHJEV_PORT, and so on. A flag given on the command line wins.
+Every command-line flag can also be set through an environment variable: --jev-model through GEOLINGO_JEV_MODEL, --port through GEOLINGO_PORT, and so on. A flag given on the command line wins.
 """
 
 from __future__ import annotations
@@ -19,15 +19,15 @@ from pathlib import Path
 from flask import Flask, jsonify, request
 from PIL import Image
 
-from depthjev.decision.jev import DEFAULT_MODEL
-from depthjev.decision.policy import FALLBACK_ROTATE, Policy, build_response
+from geolingo.decision.jev import DEFAULT_MODEL
+from geolingo.decision.policy import FALLBACK_ROTATE, Policy, build_response
 
-log = logging.getLogger("depthjev.server")
+log = logging.getLogger("geolingo.server")
 REPO = Path(__file__).resolve().parents[1]
 
 
 def create_app(policy: Policy, log_path: str | None) -> Flask:
-    app = Flask("depthjev")
+    app = Flask("geolingo")
     log_file = open(log_path, "a", buffering=1, encoding="utf-8") if log_path else None
     counter = {"n": 0}
     last = {"key": None, "response": None, "record": None}
@@ -106,9 +106,9 @@ def create_app(policy: Policy, log_path: str | None) -> Flask:
 
 
 def build_policy(args) -> Policy:
-    from depthjev.decision.jev import JevClient
-    from depthjev.perception.depth import DepthEstimator
-    from depthjev.perception.detection import TargetDetector
+    from geolingo.decision.jev import JevClient
+    from geolingo.perception.depth import DepthEstimator
+    from geolingo.perception.detection import TargetDetector
 
     depth = DepthEstimator(args.da3_dir, device=args.device)
     detector = TargetDetector(args.owlv2_dir, device=args.device, threshold=args.detection_threshold)
@@ -118,14 +118,14 @@ def build_policy(args) -> Policy:
 
 def parse_args(argv=None):
     p = argparse.ArgumentParser(
-        prog="python -m depthjev.server",
-        description="DepthJev server for EmbodiedBench model_type=custom. "
-        "Each flag can also be set as an environment variable, e.g. --jev-model as DEPTHJEV_JEV_MODEL.",
+        prog="python -m geolingo.server",
+        description="GeoLingo server for EmbodiedBench model_type=custom. "
+        "Each flag can also be set as an environment variable, e.g. --jev-model as GEOLINGO_JEV_MODEL.",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
 
     def flag(name: str, default, **kwargs):
-        env = "DEPTHJEV_" + name.upper().replace("-", "_")
+        env = "GEOLINGO_" + name.upper().replace("-", "_")
         p.add_argument(f"--{name}", default=os.environ.get(env, default), **kwargs)
 
     flag("host", "127.0.0.1", help="bind address; use 0.0.0.0 for an evaluator on another machine")
@@ -156,7 +156,7 @@ def main(argv=None):
     log_path = log_dir / f"{args.run_name}.jsonl"
     policy = build_policy(args)
     app = create_app(policy, str(log_path))
-    log.info("DepthJev server on %s:%d, log %s", args.host, args.port, log_path)
+    log.info("GeoLingo server on %s:%d, log %s", args.host, args.port, log_path)
     # threaded=False: one GPU pipeline at a time; the evaluator is a single sequential client anyway
     app.run(host=args.host, port=args.port, threaded=False)
 

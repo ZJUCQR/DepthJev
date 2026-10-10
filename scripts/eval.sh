@@ -1,16 +1,17 @@
 #!/usr/bin/env bash
-# Run EB-Navigation against a running DepthJev server. Arguments are EmbodiedBench (hydra) overrides.
+# Run EB-Navigation against a running GeoLingo server. Arguments are EmbodiedBench (hydra) overrides.
 #
 #   bash scripts/eval.sh exp_name=dev eval_sets=[base] down_sample_ratio=0.05
 #
-#   SERVER_URL         default http://127.0.0.1:${DEPTHJEV_PORT:-23333}/process
-#   DEPTHJEV_EVAL_ENV  Python environment of the evaluator, default envs/depthjev-eval
+#   SERVER_URL         default http://127.0.0.1:${GEOLINGO_PORT:-23333}/process
+#   GEOLINGO_EVAL_ENV  Python environment of the evaluator, default envs/geolingo-eval
 #   THOR_PLATFORM      Linux64 (default: Xvfb + Mesa, CPU rendering) or CloudRendering (needs a Vulkan driver)
+#   EMBODIEDBENCH_DIR  the EmbodiedBench folder, default the one installed in the evaluator with pip install -e
 #
-# Results land in third_party/EmbodiedBench/running/eb_nav/depthjev_<exp_name>/<eval_set>/.
+# Results land in running/eb_nav/geolingo_<exp_name>/<eval_set>/ in the EmbodiedBench folder.
 set -euo pipefail
 REPO=$(cd "$(dirname "$0")/.." && pwd)
-SERVER_URL=${SERVER_URL:-http://127.0.0.1:${DEPTHJEV_PORT:-23333}/process}
+SERVER_URL=${SERVER_URL:-http://127.0.0.1:${GEOLINGO_PORT:-23333}/process}
 # ai2thor maps CUDA_VISIBLE_DEVICES to a Vulkan device (controller.py, unity_command) and fails without an
 # NVIDIA Vulkan driver; the evaluator renders on the CPU, so it must not see the variable.
 unset CUDA_VISIBLE_DEVICES
@@ -25,7 +26,7 @@ if [ "$THOR_PLATFORM" = Linux64 ]; then
     fi
     export LIBGL_ALWAYS_SOFTWARE=1 GALLIUM_DRIVER=${GALLIUM_DRIVER:-llvmpipe}
 fi
-curl -fsS "${SERVER_URL%/process}/health" >/dev/null || { echo "DepthJev server not reachable at $SERVER_URL" >&2; exit 1; }
+curl -fsS "${SERVER_URL%/process}/health" >/dev/null || { echo "GeoLingo server not reachable at $SERVER_URL" >&2; exit 1; }
 cd "$REPO"
-exec "${DEPTHJEV_EVAL_ENV:-$REPO/envs/depthjev-eval}/bin/python" -m depthjev.evaluation.launch \
-    --server-url "$SERVER_URL" --platform "$THOR_PLATFORM" env=eb-nav model_name=depthjev model_type=custom "$@"
+exec "${GEOLINGO_EVAL_ENV:-$REPO/envs/geolingo-eval}/bin/python" -m geolingo.evaluation.launch \
+    --server-url "$SERVER_URL" --platform "$THOR_PLATFORM" env=eb-nav model_name=geolingo model_type=custom "$@"

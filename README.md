@@ -1,12 +1,11 @@
 <div align="center">
 
-<h1>🧭 DepthJev</h1>
+<h1>🧭 GeoLingo</h1>
 
-<h3>Turning Depth into Text for Embodied Navigation</h3>
+<h3>Translating Geometry into Language for Embodied Navigation</h3>
 
 <p>
-  <a href="https://zjucqr.github.io/DepthJev/"><img src="https://img.shields.io/badge/project-page-0ea5e9?logo=githubpages&logoColor=white" alt="Project page"></a>
-  <a href="https://github.com/ZJUCQR/DepthJev/actions/workflows/lint.yml"><img src="https://github.com/ZJUCQR/DepthJev/actions/workflows/lint.yml/badge.svg" alt="lint"></a>
+  <a href="https://github.com/ZJUCQR/GeoLingo/actions/workflows/lint.yml"><img src="https://github.com/ZJUCQR/GeoLingo/actions/workflows/lint.yml/badge.svg" alt="lint"></a>
   <img src="https://img.shields.io/badge/python-3.11-3776AB?logo=python&logoColor=white" alt="Python 3.11">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-green" alt="Apache-2.0"></a>
   <img src="https://img.shields.io/badge/EB--Navigation-46.7%25-orange" alt="EB-Navigation success 46.7%">
@@ -14,7 +13,7 @@
 </p>
 
 <p>
-  <a href="https://zjucqr.github.io/DepthJev/"><b>Project page</b></a> ·
+  <a href="https://zjucqr.github.io/GeoLingo/"><b>Project page</b></a> ·
   <a href="#how-it-works">How it works</a> ·
   <a href="#getting-started">Getting started</a> ·
   <a href="#results">Results</a> ·
@@ -26,10 +25,10 @@
 </div>
 
 <p align="center">
-  <img src="assets/teaser.gif" width="100%" alt="DepthJev on a recorded EB-Navigation episode: the camera frame with the detected pot, Depth Anything 3 metric depth sweeping across it in five sectors, and the text facts Jev reads at each step">
+  <img src="assets/teaser.gif" width="100%" alt="GeoLingo on a recorded EB-Navigation episode: the camera frame with the detected pot, Depth Anything 3 metric depth sweeping across it in five sectors, and the text facts Jev reads at each step">
 </p>
 
-**DepthJev** is a navigation agent for [EmbodiedBench](https://github.com/EmbodiedBench/EmbodiedBench) EB-Navigation. It converts each RGB frame into metric depth with **Depth Anything 3**, detects the target with **OWLv2**, and turns the geometry into short text facts. The **Jev** decision model reads only these facts, never the image, and picks the next action.
+**GeoLingo** is a navigation agent for [EmbodiedBench](https://github.com/EmbodiedBench/EmbodiedBench) EB-Navigation. It converts each RGB frame into metric depth with **Depth Anything 3**, detects the target with **OWLv2**, and turns the geometry into short text facts. The **Jev** decision model reads only these facts, never the image, and picks the next action.
 
 ## ✨ Highlights
 
@@ -43,20 +42,20 @@
 ## 🏗️ How it works
 
 <p align="center">
-  <img src="assets/how-it-works.png" width="100%" alt="DepthJev pipeline: RGB observation, task and history → metric depth and target detection → text facts → Jev navigation action → next observation">
+  <img src="assets/how-it-works.png" width="100%" alt="GeoLingo pipeline: RGB observation, task and history → metric depth and target detection → text facts → Jev navigation action → next observation">
 </p>
 
-Each step runs through three stages, and each stage is one sub-package of [`depthjev/`](depthjev):
+Each step runs through three stages, and each stage is one sub-package of [`geolingo/`](geolingo):
 
-1. **👁️ Perceive** ([`perception/`](depthjev/perception)). Depth Anything 3 estimates metric depth and OWLv2 finds the target. The depth map is back-projected, levelled against the floor and cut into five sectors.
-2. **📝 Describe** ([`language/`](depthjev/language)). Free space, target distance and the action history become text facts in four distance bins: under 0.5 m, 0.5 to 1 m, 1 to 2 m and over 2 m.
-3. **🎯 Act** ([`decision/`](depthjev/decision)). Jev reads the facts and selects one of eight navigation actions, and the loop repeats with the next observation.
+1. **👁️ Perceive** ([`perception/`](geolingo/perception)). Depth Anything 3 estimates metric depth and OWLv2 finds the target. The depth map is back-projected, levelled against the floor and cut into five sectors.
+2. **📝 Describe** ([`language/`](geolingo/language)). Free space, target distance and the action history become text facts in four distance bins: under 0.5 m, 0.5 to 1 m, 1 to 2 m and over 2 m.
+3. **🎯 Act** ([`decision/`](geolingo/decision)). Jev reads the facts and selects one of eight navigation actions, and the loop repeats with the next observation.
 
 ### 🍝 Example
 
-“*I need a vessel to boil pasta for dinner. Can you navigate to that object and stay close?*” DepthJev resolves the target to **Pot** and reaches it in 9 steps. Boxes are OWLv2 detections, distances come from DA3.
+“*I need a vessel to boil pasta for dinner. Can you navigate to that object and stay close?*” GeoLingo resolves the target to **Pot** and reaches it in 9 steps. Boxes are OWLv2 detections, distances come from DA3.
 
-<p align="center"><img src="assets/example-pot.jpg" width="100%" alt="DepthJev reaching a pot in 9 steps: frames of steps 0, 3, 6, 7 and 8 with the detected pot and its distance"></p>
+<p align="center"><img src="assets/example-pot.jpg" width="100%" alt="GeoLingo reaching a pot in 9 steps: frames of steps 0, 3, 6, 7 and 8 with the detected pot and its distance"></p>
 
 <details>
 <summary><b>What Jev reads at step 0</b></summary>
@@ -102,21 +101,19 @@ Each step runs through three stages, and each stage is one sub-package of [`dept
 
 ## 🚀 Getting started
 
-DepthJev runs in two Python environments: the **server** (Python 3.11, one GPU) runs the models, and the **evaluator** (Python 3.9, CPU) runs EmbodiedBench and AI2-THOR. All commands run from the repository root.
+GeoLingo runs in two Python environments: the **server** (Python 3.11, one GPU) runs the models, and the **evaluator** (Python 3.9, CPU) runs EmbodiedBench and AI2-THOR. All commands run from the repository root.
 
-**1. Clone with the pinned dependencies**
+**1. Clone**
 
 ```bash
-git clone --recursive https://github.com/ZJUCQR/DepthJev.git && cd DepthJev
+git clone https://github.com/ZJUCQR/GeoLingo.git && cd GeoLingo
 ```
-
-EmbodiedBench and Depth Anything 3 are git submodules in `third_party/`, pinned to the commits behind the results. In an existing clone, run `git submodule update --init`.
 
 **2. Server environment**
 
 ```bash
-conda create -y -p envs/depthjev python=3.11 pip
-conda activate ./envs/depthjev
+conda create -y -p envs/geolingo python=3.11 pip
+conda activate ./envs/geolingo
 pip install -r requirements.txt
 hf download depth-anything/DA3METRIC-LARGE --local-dir checkpoints/DA3METRIC-LARGE
 hf download google/owlv2-base-patch16-ensemble --local-dir checkpoints/owlv2-base-patch16-ensemble
@@ -125,12 +122,13 @@ hf download google/owlv2-base-patch16-ensemble --local-dir checkpoints/owlv2-bas
 **3. Evaluation environment**
 
 ```bash
-conda create -y -p envs/depthjev-eval python=3.9.21 pip
-conda activate ./envs/depthjev-eval
+conda create -y -p envs/geolingo-eval python=3.9.21 pip
+conda activate ./envs/geolingo-eval
 pip install -r requirements.txt
+pip install --no-deps -e /path/to/EmbodiedBench
 ```
 
-The same `requirements.txt` serves both environments: environment markers select the packages by Python version.
+The same `requirements.txt` serves both environments: environment markers select the packages by Python version. [EmbodiedBench](https://github.com/EmbodiedBench/EmbodiedBench) provides EB-Navigation, and its repository covers the details. The scripts find your clone through this install, or through `EMBODIEDBENCH_DIR`.
 
 **4. Headless rendering for AI2-THOR**
 
@@ -161,23 +159,11 @@ bash scripts/run.sh full --sets all --ratio 1 --parallel  # one server per subse
 | `--gpus` | visible GPUs | CUDA devices for the servers |
 | `--parallel` | off | one server + evaluator per subset |
 
-Each request is logged to `logs/RUN_NAME.jsonl`, next to the server and evaluator output, and EmbodiedBench writes the episodes, frames included, to `third_party/EmbodiedBench/running/eb_nav/depthjev_RUN_NAME/`. The run prints its report at the end, and `python -m depthjev.evaluation.report RUN_NAME --ratio R` prints it again from these files.
-
-<details>
-<summary><b>Server and evaluator in separate terminals</b></summary>
-
-```bash
-DEPTHJEV_RUN_NAME=dev bash scripts/server.sh
-SERVER_URL=http://127.0.0.1:23333/process bash scripts/eval.sh exp_name=dev eval_sets=[base] down_sample_ratio=0.05
-```
-
-The server listens on `127.0.0.1` by default. For an evaluator on another machine, start it with `bash scripts/server.sh --host 0.0.0.0` and point `SERVER_URL` at the server.
-
-</details>
+Each request is logged to `logs/RUN_NAME.jsonl`, next to the server and evaluator output, and EmbodiedBench writes the episodes, frames included, to `running/eb_nav/geolingo_RUN_NAME/` in the EmbodiedBench folder. The run prints its report at the end, and `python -m geolingo.evaluation.report RUN_NAME --ratio R` prints it again from these files.
 
 ## ⚙️ Configuration
 
-There is no configuration file. Server settings are flags of `python -m depthjev.server` (`bash scripts/server.sh --help`), and each flag can also be set as an environment variable: `--jev-model` as `DEPTHJEV_JEV_MODEL`, and so on.
+There is no configuration file. Server settings are flags of `python -m geolingo.server` (`bash scripts/server.sh --help`), and each flag can also be set as an environment variable: `--jev-model` as `GEOLINGO_JEV_MODEL`, and so on.
 
 | Flag | Default | Description |
 | --- | --- | --- |
@@ -190,7 +176,7 @@ There is no configuration file. Server settings are flags of `python -m depthjev
 | `--host`, `--port` | `127.0.0.1`, `23333` | address the server listens on |
 | `--log-dir`, `--run-name` | `logs`, a timestamp | the request log is `<log-dir>/<run-name>.jsonl` |
 
-The scripts also read `DEPTHJEV_SERVER_ENV` and `DEPTHJEV_EVAL_ENV`, the two environments (default `envs/depthjev` and `envs/depthjev-eval`), and `DEPTHJEV_PORT`.
+The scripts also read `GEOLINGO_SERVER_ENV` and `GEOLINGO_EVAL_ENV`, the two environments (default `envs/geolingo` and `envs/geolingo-eval`), `GEOLINGO_PORT` and `EMBODIEDBENCH_DIR`.
 
 <a id="results"></a>
 
@@ -207,28 +193,11 @@ All **300 EB-Navigation episodes** on one **H100**, run with `bash scripts/run.s
 | long_horizon | 25/60 | 0.417 | 17.3 | 60/60 |
 | **All** | **140/300** | **0.467** | 16.0 | 263/300 |
 
-<details>
-<summary><b>⏱️ Server latency</b></summary>
-
-Mean, p50 and p90 are for one run, and the last column shows three runs sharing one GPU. All values are in seconds.
-
-| Stage | Mean | p50 | p90 | Mean, 3 runs/GPU |
-| --- | :---: | :---: | :---: | :---: |
-| DA3 depth | 0.15 | 0.13 | 0.23 | 0.27 |
-| OWLv2 detection | 0.22 | 0.21 | 0.22 | 0.32 |
-| Jev decision | 0.34 | 0.27 | 0.51 | 0.38 |
-| Target resolution, once per episode | 0.82 | 0.61 | 1.63 | 1.42 |
-| **Whole step** | **0.76** | **0.64** | **1.04** | **1.06** |
-
-With AI2-THOR software rendering, a single run averages about 21 s per episode.
-
-</details>
-
 ## 📁 Project structure
 
 ```
-DepthJev/
-├── depthjev/                # the agent: one sub-package per stage of a step
+GeoLingo/
+├── geolingo/                # the agent: one sub-package per stage of a step
 │   ├── perception/          # 👁️ the frame becomes metres
 │   │   ├── depth.py         #    Depth Anything 3 metric depth
 │   │   ├── detection.py     #    OWLv2 open-vocabulary detection
@@ -249,7 +218,6 @@ DepthJev/
 │   ├── run.sh               # end to end: server, evaluator and report, single or --parallel
 │   ├── server.sh            # server only
 │   └── eval.sh              # evaluator only
-├── third_party/             # git submodules: EmbodiedBench, Depth-Anything-3
 ├── assets/                  # README figures
 └── requirements.txt         # both environments, selected by Python version
 ```
@@ -258,14 +226,14 @@ DepthJev/
 
 ## 📝 Citation
 
-If DepthJev helps your research, please cite it:
+If GeoLingo helps your research, please cite it:
 
 ```bibtex
-@misc{depthjev2026,
-  title        = {DepthJev: Turning Depth into Text for Embodied Navigation},
+@misc{geolingo2026,
+  title        = {GeoLingo: Translating Geometry into Language for Embodied Navigation},
   author       = {ZJUCQR},
   year         = {2026},
-  howpublished = {\url{https://github.com/ZJUCQR/DepthJev}}
+  howpublished = {\url{https://github.com/ZJUCQR/GeoLingo}}
 }
 ```
 
@@ -279,4 +247,4 @@ If DepthJev helps your research, please cite it:
 
 ## 📄 License
 
-DepthJev is released under the [Apache-2.0 License](LICENSE).
+GeoLingo is released under the [Apache-2.0 License](LICENSE).

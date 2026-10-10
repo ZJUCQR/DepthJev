@@ -1,6 +1,6 @@
 line-length = 120
 target-version = "py311"
-extend-exclude = ["third_party", "logs"]
+extend-exclude = ["logs"]
 
 [lint]
 select = ["E", "F", "W", "I", "B", "UP"]
@@ -8,4 +8,4 @@ ignore = ["E501"]
 
 [lint.per-file-ignores]
 # The evaluation modules run in the Python 3.9 environment: no fixes that need Python 3.10+.
-"depthjev/evaluation/*.py" = ["UP", "B905"]
+"geolingo/evaluation/*.py" = ["UP", "B905"]

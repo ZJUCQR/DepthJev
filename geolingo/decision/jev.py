@@ -12,8 +12,8 @@ import time
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from depthjev.language.actions import ACTIONS
-from depthjev.language.objects import OBJECT_TYPES, display_name
+from geolingo.language.actions import ACTIONS
+from geolingo.language.objects import OBJECT_TYPES, display_name
 
 DEFAULT_MODEL = "jev-latest"
 

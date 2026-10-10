@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# Evaluate DepthJev on EB-Navigation end to end: start the server, run EmbodiedBench (model_type=custom),
+# Evaluate GeoLingo on EB-Navigation end to end: start the server, run EmbodiedBench (model_type=custom),
 # stop the server and print the report.
 #
 #   bash scripts/run.sh [RUN_NAME] [--sets LIST] [--ratio R] [--gpus IDS] [--parallel]
 #
 #   RUN_NAME     default smoke. Requests are logged to logs/<run>.jsonl, EmbodiedBench writes its
-#                results to third_party/EmbodiedBench/running/eb_nav/depthjev_<run>/.
+#                results to running/eb_nav/geolingo_<run>/ in the EmbodiedBench folder.
 #   --sets LIST  comma-separated subsets (base, common_sense, complex_instruction, visual_appearance,
 #                long_horizon) or all; default base.
 #   --ratio R    EmbodiedBench down_sample_ratio: every round(1/R)-th task of each subset; default 0.05
@@ -13,17 +13,17 @@
 #   --gpus IDS   comma-separated CUDA devices for the servers; default the visible devices. Without
 #                --parallel only the first one is used.
 #   --parallel   one server and one evaluator per subset instead of one for all subsets. Subset i runs as
-#                <run>-<subset> on GPU IDS[i mod n], port DEPTHJEV_PORT+i (default 23333+i) and X display
+#                <run>-<subset> on GPU IDS[i mod n], port GEOLINGO_PORT+i (default 23333+i) and X display
 #                :100+i. Several subsets may share a card: a server needs < 4 GB and AI2-THOR renders on the CPU.
 #
 #   bash scripts/run.sh                                            # smoke test, 3 base episodes
 #   bash scripts/run.sh full --sets all --ratio 1                  # all 300 episodes with one server
 #   bash scripts/run.sh full --sets all --ratio 1 --parallel       # the same, one subset per GPU
 #
-#   DEPTHJEV_SERVER_ENV, DEPTHJEV_EVAL_ENV and DEPTHJEV_PORT are passed on to server.sh and eval.sh.
+#   GEOLINGO_SERVER_ENV, GEOLINGO_EVAL_ENV and GEOLINGO_PORT are passed on to server.sh and eval.sh.
 set -euo pipefail
 REPO=$(cd "$(dirname "$0")/.." && pwd)
-PORT=${DEPTHJEV_PORT:-23333}
+PORT=${GEOLINGO_PORT:-23333}
 
 ALL_SETS=(base common_sense complex_instruction visual_appearance long_horizon)
 usage() { awk 'NR > 1 && !/^#/ { exit } NR > 1 { sub(/^# ?/, ""); print }' "$0"; exit "${1:-0}"; }
@@ -65,7 +65,7 @@ run_slot() {
     if ss -ltn 2>/dev/null | grep -qE "[:.]$port[[:space:]]"; then
         say "port $port is already in use (stale server?)"; return 1
     fi
-    CUDA_VISIBLE_DEVICES=$gpu DEPTHJEV_RUN_NAME=$run setsid bash "$REPO/scripts/server.sh" --port "$port" > "$server_log" 2>&1 &
+    CUDA_VISIBLE_DEVICES=$gpu GEOLINGO_RUN_NAME=$run setsid bash "$REPO/scripts/server.sh" --port "$port" > "$server_log" 2>&1 &
     SERVER_PID=$!
     say "server on GPU $gpu, port $port; loading models"
     for _ in $(seq 1 120); do
@@ -115,5 +115,5 @@ else
 fi
 
 echo "=== report ==="
-(cd "$REPO" && "${DEPTHJEV_EVAL_ENV:-$REPO/envs/depthjev-eval}/bin/python" -m depthjev.evaluation.report "${RUNS[@]}" --ratio "$RATIO")
+(cd "$REPO" && "${GEOLINGO_EVAL_ENV:-$REPO/envs/geolingo-eval}/bin/python" -m geolingo.evaluation.report "${RUNS[@]}" --ratio "$RATIO")
 exit $status

@@ -11,9 +11,9 @@ from dataclasses import dataclass
 
 from PIL import Image
 
-from depthjev.decision.jev import JevClient, JevError
-from depthjev.language.actions import BY_KEY, Action
-from depthjev.language.facts import (
+from geolingo.decision.jev import JevClient, JevError
+from geolingo.language.actions import BY_KEY, Action
+from geolingo.language.facts import (
     CLEAR,
     StepFacts,
     TargetObservation,
@@ -22,9 +22,9 @@ from depthjev.language.facts import (
     search_status,
     sidestep_oscillation,
 )
-from depthjev.language.objects import detector_queries, display_name
-from depthjev.language.prompt import ParsedPrompt, PromptParseError, parse_prompt
-from depthjev.perception.geometry import FOV_DEG, analyze_depth, sector_of_column
+from geolingo.language.objects import detector_queries, display_name
+from geolingo.language.prompt import ParsedPrompt, PromptParseError, parse_prompt
+from geolingo.perception.geometry import FOV_DEG, analyze_depth, sector_of_column
 
 FALLBACK_ROTATE = BY_KEY["rotate_right"]
 

@@ -1,6 +1,6 @@
-# DepthJev runs in two Python environments, and this one file serves both: the markers pick each line's environment.
+# GeoLingo runs in two Python environments, and this one file serves both: the markers pick each line's environment.
 #
-#   server  Python 3.11, CUDA 12.8  DepthJev server: Depth Anything 3, OWLv2 and the Jev client
+#   server  Python 3.11, CUDA 12.8  GeoLingo server: Depth Anything 3, OWLv2 and the Jev client
 #   eval    Python 3.9, CPU         EmbodiedBench EB-Navigation with AI2-THOR
 #
 # Run `pip install -r requirements.txt` from the repository root in each environment (see README.md).
@@ -19,7 +19,7 @@ transformers==4.57.3              ; python_version >= "3.10"  # OWLv2
 opencv-python<5                   ; python_version >= "3.10"
 addict>=2.4                       ; python_version >= "3.10"  # imported by Depth Anything 3, not in its dependencies
 tqdm>=4.66                        ; python_version >= "3.10"
-./third_party/Depth-Anything-3    ; python_version >= "3.10"
+depth-anything-3 @ git+https://github.com/ByteDance-Seed/Depth-Anything-3.git@3d835ec1a5802d64a8b8b15f817a1ab54809bfe4 ; python_version >= "3.10"
 
 # ---- eval ------------------------------------------------------------------------------------------------
 torch==2.5.1+cpu                  ; python_version < "3.10"
