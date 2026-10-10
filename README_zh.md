@@ -31,10 +31,6 @@
 
 **DepthJev** 是 [EmbodiedBench](https://github.com/EmbodiedBench/EmbodiedBench) EB-Navigation 上的导航智能体。它用 **Depth Anything 3** 把每帧 RGB 转成米制深度，用 **OWLv2** 检测目标，再把几何信息写成简短的文字事实。**Jev** 决策模型只读这些事实、从不看图像，据此选出下一个动作。
 
-<p align="center">
-  <img src="assets/how-it-works.png" width="100%" alt="DepthJev 流程：RGB 观测、任务与历史 → 米制深度与目标检测 → 文本事实 → Jev 导航动作 → 下一次观测">
-</p>
-
 ## ✨ 亮点
 
 - 📈 **不看图也能打。** EB-Navigation 全部 300 题成功率 46.7%。按 EmbodiedBench 论文的结果，高于 Claude-3.5-Sonnet 的 44.7%，比不看图的 GPT-4o（17.4%）高 29.3 个点。
@@ -61,6 +57,10 @@ EB-Navigation 成功率（%）。DepthJev 的决策模型只读文本；除纯�
 <a id="how-it-works"></a>
 
 ## 🏗️ 工作原理
+
+<p align="center">
+  <img src="assets/how-it-works.png" width="100%" alt="DepthJev 流程：RGB 观测、任务与历史 → 米制深度与目标检测 → 文本事实 → Jev 导航动作 → 下一次观测">
+</p>
 
 每一步分三个阶段，每个阶段对应 [`depthjev/`](depthjev) 下的一个子包：
 

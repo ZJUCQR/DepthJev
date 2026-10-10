@@ -31,10 +31,6 @@
 
 **DepthJev** is a navigation agent for [EmbodiedBench](https://github.com/EmbodiedBench/EmbodiedBench) EB-Navigation. It converts each RGB frame into metric depth with **Depth Anything 3**, detects the target with **OWLv2**, and turns the geometry into short text facts. The **Jev** decision model reads only these facts, never the image, and picks the next action.
 
-<p align="center">
-  <img src="assets/how-it-works.png" width="100%" alt="DepthJev pipeline: RGB observation, task and history → metric depth and target detection → text facts → Jev navigation action → next observation">
-</p>
-
 ## ✨ Highlights
 
 - 📈 **Strong without pixels.** 46.7% success on all 300 EB-Navigation episodes, above Claude-3.5-Sonnet (44.7%) and 29.3 points above text-only GPT-4o (17.4%) as reported by EmbodiedBench.
@@ -61,6 +57,10 @@ Success rate (%) on EB-Navigation. DepthJev's decision model reads only text; ev
 <a id="how-it-works"></a>
 
 ## 🏗️ How it works
+
+<p align="center">
+  <img src="assets/how-it-works.png" width="100%" alt="DepthJev pipeline: RGB observation, task and history → metric depth and target detection → text facts → Jev navigation action → next observation">
+</p>
 
 Each step runs through three stages, and each stage is one sub-package of [`depthjev/`](depthjev):
 
