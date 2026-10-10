@@ -74,7 +74,7 @@
   updateBar();
 
   // ---------- reveal on scroll ----------
-  $$(".sec .card, .sec .stage, .notes li, .cases").forEach((el) => el.classList.add("reveal"));
+  $$(".sec .card, .sec .stage, .pipeline-fig, .notes li, .cases").forEach((el) => el.classList.add("reveal"));
   const rio = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) { e.target.classList.add("in"); rio.unobserve(e.target); } }), { threshold: 0.08 });
   $$(".reveal").forEach((el) => rio.observe(el));
 
@@ -915,7 +915,7 @@
       h("thead", null, h("tr", null, h("th", { text: "Setup" }), parts.map((p) => h("th", { text: p[1] })), h("th", { text: "Whole step" }), h("th", { text: "Steps" }))),
       h("tbody", null, groups.map(([name, g]) => h("tr", null, h("td", { text: name }), parts.map((p) => h("td", { text: g[p[0]].toFixed(3) + " s" })), h("td", { text: g.step.toFixed(3) + " s" }), h("td", { text: g.steps.toLocaleString("en-US") }))))));
     const kpi = $$(".kpi span")[2];
-    if (kpi && st.all) kpi.textContent = `images reach the decision model, only ~${(st.all.tokens / 1000).toFixed(1)}k tokens of text per step`;
+    if (kpi && st.all) kpi.textContent = `images seen by Jev, the decision model: it reads only text facts, about ${(st.all.tokens / 1000).toFixed(1)}k tokens per step`;
   }
 
   // =====================================================================================================
