@@ -1,6 +1,8 @@
 <div align="center">
 
-<h1>🧭 GeoLingo</h1>
+<img src="assets/logo.svg" width="88" alt="GeoLingo logo">
+
+<h1>GeoLingo</h1>
 
 <h3>将几何翻译为语言的具身导航</h3>
 
