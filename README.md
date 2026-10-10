@@ -48,7 +48,7 @@
 
 Each step runs through three stages, and each stage is one sub-package of [`depthjev/`](depthjev):
 
-1. **👁️ Perceive** ([`perception/`](depthjev/perception)). Depth Anything 3 estimates metric depth; OWLv2 finds the target. The depth map is back-projected, levelled against the floor and cut into five sectors.
+1. **👁️ Perceive** ([`perception/`](depthjev/perception)). Depth Anything 3 estimates metric depth and OWLv2 finds the target. The depth map is back-projected, levelled against the floor and cut into five sectors.
 2. **📝 Describe** ([`language/`](depthjev/language)). Free space, target distance and the action history become text facts in four distance bins: under 0.5 m, 0.5 to 1 m, 1 to 2 m and over 2 m.
 3. **🎯 Act** ([`decision/`](depthjev/decision)). Jev reads the facts and selects one of eight navigation actions, and the loop repeats with the next observation.
 
@@ -161,7 +161,7 @@ bash scripts/run.sh full --sets all --ratio 1 --parallel  # one server per subse
 | `--gpus` | visible GPUs | CUDA devices for the servers |
 | `--parallel` | off | one server + evaluator per subset |
 
-Each request is logged to `logs/RUN_NAME.jsonl`, next to the server and evaluator output, and EmbodiedBench writes the episodes, frames included, to `third_party/EmbodiedBench/running/eb_nav/depthjev_RUN_NAME/`. The run prints its report at the end; `python -m depthjev.evaluation.report RUN_NAME --ratio R` prints it again from these files.
+Each request is logged to `logs/RUN_NAME.jsonl`, next to the server and evaluator output, and EmbodiedBench writes the episodes, frames included, to `third_party/EmbodiedBench/running/eb_nav/depthjev_RUN_NAME/`. The run prints its report at the end, and `python -m depthjev.evaluation.report RUN_NAME --ratio R` prints it again from these files.
 
 <details>
 <summary><b>Server and evaluator in separate terminals</b></summary>
@@ -186,7 +186,7 @@ There is no configuration file. Server settings are flags of `python -m depthjev
 | `--device` | `cuda` | torch device for both models |
 | `--detection-threshold` | `0.1` | OWLv2 score threshold |
 | `--jev-model` | `jev-latest` | Jev model name |
-| `--jev-timeout` | `20` | seconds per Jev request; the SDK retries twice on top |
+| `--jev-timeout` | `20` | seconds per Jev request, plus two SDK retries |
 | `--host`, `--port` | `127.0.0.1`, `23333` | address the server listens on |
 | `--log-dir`, `--run-name` | `logs`, a timestamp | the request log is `<log-dir>/<run-name>.jsonl` |
 
@@ -210,7 +210,7 @@ All **300 EB-Navigation episodes** on one **H100**, run with `bash scripts/run.s
 <details>
 <summary><b>⏱️ Server latency</b></summary>
 
-Mean, p50 and p90 are for one run; the last column shows three runs sharing one GPU. All values are in seconds.
+Mean, p50 and p90 are for one run, and the last column shows three runs sharing one GPU. All values are in seconds.
 
 | Stage | Mean | p50 | p90 | Mean, 3 runs/GPU |
 | --- | :---: | :---: | :---: | :---: |
@@ -221,23 +221,6 @@ Mean, p50 and p90 are for one run; the last column shows three runs sharing one 
 | **Whole step** | **0.76** | **0.64** | **1.04** | **1.06** |
 
 With AI2-THOR software rendering, a single run averages about 21 s per episode.
-
-</details>
-
-<details>
-<summary><b>🔍 Failure analysis: 160 unsuccessful episodes</b></summary>
-
-| Pattern | Episodes |
-| --- | :---: |
-| Target rarely detected or incorrectly identified | 51 |
-| Sidestepping left and right without progress | 40 |
-| Stuck against obstacles | 32 |
-| Distance underestimated or false target detection | 27 |
-| Other | 10 |
-
-- **Detection.** The first group includes 17 `visual_appearance` episodes with an incorrect target type. Adding "trash can" and "bin" improved GarbageCan success from 0/5 to 5/5 on a development sample; low-score detections (0.1–0.2) remain a common source of errors.
-- **Action constraints.** Attaching constraints directly to action options prevented repeated `look_down` actions more effectively than a general rule.
-- **Scene difficulty.** Across the same 60 scenes and targets, 12 succeeded under all five instruction variants and 22 failed under all five. `long_horizon` also changes the starting orientation by 180°.
 
 </details>
 
@@ -270,8 +253,6 @@ DepthJev/
 ├── assets/                  # README figures
 └── requirements.txt         # both environments, selected by Python version
 ```
-
-Setup and runs add `envs/`, `checkpoints/` and `logs/`, which git ignores.
 
 <a id="citation"></a>
 

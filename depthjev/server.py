@@ -139,7 +139,7 @@ def parse_args(argv=None):
     )
     flag("detection-threshold", 0.1, type=float, help="OWLv2 score threshold")
     flag("jev-model", DEFAULT_MODEL, help="Jev model name")
-    flag("jev-timeout", 20.0, type=float, help="seconds per Jev request; the SDK retries twice on top")
+    flag("jev-timeout", 20.0, type=float, help="seconds per Jev request, plus two SDK retries")
     flag("log-dir", str(REPO / "logs"), help="one JSON line per request goes to <log-dir>/<run-name>.jsonl")
     flag("run-name", time.strftime("%Y%m%d_%H%M%S"), help="names the request log")
     return p.parse_args(argv)

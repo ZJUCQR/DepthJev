@@ -34,7 +34,7 @@
 ## ✨ 亮点
 
 - 📈 **不看图也能打。** EB-Navigation 全部 300 题成功率 46.7%，决策模型全程不看图像。
-- 🧭 **长程任务稳得住。** `long_horizon` 子集成功率 41.7%；这个子集的起始朝向转了 180°，目标通常在机器人身后。
+- 🧭 **长程任务稳得住。** `long_horizon` 子集成功率 41.7%，这个子集的起始朝向转了 180°，目标通常在机器人身后。
 - 📏 **米制感知。** 五个扇区的可走距离、下一步 0.25 m 的碰撞检查和目标距离都来自单目米制深度，Jev 按米而不是按像素推理。
 - ⚡ **快。** 单张 H100 上每步 0.76 s，其中 DA3 0.15 s，OWLv2 0.22 s，Jev 0.34 s。
 
@@ -48,7 +48,7 @@
 
 每一步分三个阶段，每个阶段对应 [`depthjev/`](depthjev) 下的一个子包：
 
-1. **👁️ 感知**（[`perception/`](depthjev/perception)）。Depth Anything 3 估计米制深度；OWLv2 定位目标。深度图经反投影、按地面校平后切成五个扇区。
+1. **👁️ 感知**（[`perception/`](depthjev/perception)）。Depth Anything 3 估计米制深度，OWLv2 定位目标。深度图经反投影、按地面校平后切成五个扇区。
 2. **📝 描述**（[`language/`](depthjev/language)）。可走空间、目标距离和动作历史整理成文本事实，距离分为四档：under 0.5 m、0.5 to 1 m、1 to 2 m 和 over 2 m。
 3. **🎯 行动**（[`decision/`](depthjev/decision)）。Jev 读取事实，从八个导航动作中选一个，再根据新观测重复。
 
@@ -161,7 +161,7 @@ bash scripts/run.sh full --sets all --ratio 1 --parallel  # 每个子集一个�
 | `--gpus` | 可见的 GPU | 服务用的 CUDA 设备 |
 | `--parallel` | 关 | 每个子集一个服务 + 一个评测 |
 
-每个请求记录在 `logs/RUN_NAME.jsonl`（同目录下还有服务端和评测端的输出），EmbodiedBench 把各回合结果（含画面）写到 `third_party/EmbodiedBench/running/eb_nav/depthjev_RUN_NAME/`。运行结束时会打印报告；之后可以用 `python -m depthjev.evaluation.report RUN_NAME --ratio R` 从这些文件重新生成。
+每个请求记录在 `logs/RUN_NAME.jsonl`（同目录下还有服务端和评测端的输出），EmbodiedBench 把各回合结果（含画面）写到 `third_party/EmbodiedBench/running/eb_nav/depthjev_RUN_NAME/`。运行结束时会打印报告，之后可以用 `python -m depthjev.evaluation.report RUN_NAME --ratio R` 从这些文件重新生成。
 
 <details>
 <summary><b>服务和评测分两个终端跑</b></summary>
@@ -210,7 +210,7 @@ SERVER_URL=http://127.0.0.1:23333/process bash scripts/eval.sh exp_name=dev eval
 <details>
 <summary><b>⏱️ 服务端耗时</b></summary>
 
-均值、p50 和 p90 对应单路运行；最后一列为三路共用一张 GPU，单位均为秒。
+均值、p50 和 p90 对应单路运行，最后一列为三路共用一张 GPU，单位均为秒。
 
 | 阶段 | 均值 | p50 | p90 | 一卡三路均值 |
 | --- | :---: | :---: | :---: | :---: |
@@ -221,23 +221,6 @@ SERVER_URL=http://127.0.0.1:23333/process bash scripts/eval.sh exp_name=dev eval
 | **一步合计** | **0.76** | **0.64** | **1.04** | **1.06** |
 
 包含 AI2-THOR 软件渲染时，单路运行平均每回合约 21 秒。
-
-</details>
-
-<details>
-<summary><b>🔍 失败分析：160 个未成功回合</b></summary>
-
-| 失败类型 | 回合数 |
-| --- | :---: |
-| 目标很少被检测到或目标类型错误 | 51 |
-| 左右横移来回震荡 | 40 |
-| 被障碍卡住反复撞 | 32 |
-| 距离低估或目标误检 | 27 |
-| 其他 | 10 |
-
-- **目标检测。** 第一类包含 17 个目标类型解析错误的 `visual_appearance` 回合。开发样本中，为 GarbageCan 添加 "trash can" 和 "bin" 后，成功数从 0/5 提升到 5/5；低分检测（0.1–0.2）仍是常见错误来源。
-- **动作约束。** 把约束直接附在动作选项上，比写成通用规则更能避免反复 `look_down`。
-- **场景难度。** 同一组 60 个场景和目标中，12 个在五种指令下都成功，22 个都失败；`long_horizon` 还把起始朝向旋转了 180°。
 
 </details>
 
@@ -270,8 +253,6 @@ DepthJev/
 ├── assets/                  # README 用图
 └── requirements.txt         # 两个环境共用，按 Python 版本选择
 ```
-
-安装和运行会生成 `envs/`、`checkpoints/` 和 `logs/`，它们都在 git 忽略列表里。
 
 <a id="citation"></a>
 
