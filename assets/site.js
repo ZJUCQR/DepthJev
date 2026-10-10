@@ -32,19 +32,24 @@
   const media = (id, k, depth) => `media/${id}/${pad(k)}${depth ? "-d" : ""}.webp`;
   const typeName = (t) => t.replace(/([a-z])([A-Z])/g, "$1 $2").toLowerCase();
   const cap = (t) => t.charAt(0).toUpperCase() + t.slice(1);
-  const getJSON = (url) => fetch(url).then((r) => { if (!r.ok) throw new Error(url + " " + r.status); return r.json(); });
+  const VERSION = new URL(document.currentScript.src).search; // "?v=..." from index.html, so data and code update together
+  const getJSON = (url) => fetch(url + VERSION).then((r) => { if (!r.ok) throw new Error(url + " " + r.status); return r.json(); });
   const cssVar = (name, el) => getComputedStyle(el || rootEl).getPropertyValue(name).trim();
 
   function whenVisible(el, cb, threshold) {
     const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) { io.disconnect(); cb(); } }), { threshold: threshold || 0.25 });
     io.observe(el);
   }
+  function nearView(el, cb) {
+    const io = new IntersectionObserver((es) => { if (es.some((e) => e.isIntersecting)) { io.disconnect(); cb(); } }, { rootMargin: "600px 0px" });
+    io.observe(el);
+  }
   function watchVisible(el, cb) {
     const io = new IntersectionObserver((es) => es.forEach((e) => cb(e.isIntersecting)), { threshold: 0.12 });
     io.observe(el);
   }
-  function sizeCanvas(cv, w, hgt) {
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  function sizeCanvas(cv, w, hgt, maxDpr) {
+    const dpr = Math.min(window.devicePixelRatio || 1, maxDpr || 2);
     const W = w || cv.clientWidth, H = hgt || cv.clientHeight;
     if (cv.width !== Math.round(W * dpr) || cv.height !== Math.round(H * dpr)) { cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); }
     const g = cv.getContext("2d");
@@ -120,6 +125,7 @@
     return { xs, zs, n };
   }
   function prepRun(run) {
+    if (run.bounds) return run;
     const p0 = run.frames[0].pose, t0 = (p0[2] * Math.PI) / 180, c0 = Math.cos(t0), s0 = Math.sin(t0);
     // map frame: x to the right of the start heading, y along it (the start heading points up on screen)
     const toMap = (wx, wz) => { const dx = wx - p0[0], dz = wz - p0[1]; return [dx * c0 - dz * s0, dx * s0 + dz * c0]; };
@@ -138,6 +144,7 @@
       f.mapFloor = conv(f.local.floor);
     });
     run.bounds = { cx: (x0 + x1) / 2, cy: (y0 + y1) / 2, hw: (x1 - x0) / 2 + 0.25, hh: (y1 - y0) / 2 + 0.25 };
+    return run;
   }
 
   function drawMap(cv, run, k, opts) {
@@ -238,6 +245,7 @@
   // FIG. 1: one episode, as Jev sees it
   // =====================================================================================================
   function initHero(run) {
+    prepRun(run);
     const view = $("#hero-view"), rgb = $("#hero-rgb"), dep = $("#hero-depth"), ov = $("#hero-overlay");
     const facts = $("#hero-facts"), tokens = $("#hero-tokens"), meta = $("#hero-meta"), dist = $("#hero-dist");
     const playBtn = $("#hero-play"), mapCv = $("#hero-map");
@@ -263,7 +271,8 @@
       return b;
     });
 
-    let k = 0, t0 = 0, playing = !reduced, onScreen = true, raf = 0, lines = [];
+    let k = 0, t0 = 0, playing = !reduced, onScreen = true, raf = 0, timer = 0, lines = [], barsShown = null;
+    const scan = $("#hero-scan");
     const T = { scan0: 300, scan1: 1700, bars: 1850, next: 3900 };
 
     function buildFacts(f) {
@@ -302,15 +311,18 @@
         probs.set(null);
       }
       dist.textContent = `${f.dist.toFixed(2)} m to the ${run.name}`;
+      barsShown = null;
       drawMap(mapCv, run, k);
       tick(performance.now());
     }
 
     function tick(now) {
       cancelAnimationFrame(raf);
+      clearTimeout(timer);
       const t = now - t0, last = k === run.N - 1, f = run.frames[k];
       const p = last ? 1 : clamp((t - T.scan0) / (T.scan1 - T.scan0), 0, 1), e = ease(p);
       view.style.setProperty("--reveal", (last ? 0 : e * 100).toFixed(2) + "%");
+      scan.style.setProperty("--scan-x", (e * view.clientWidth).toFixed(1) + "px");
       view.style.setProperty("--scan-o", p > 0 && p < 1 ? 1 : 0);
       view.style.setProperty("--sep-o", last ? 0 : Math.min(1, p * 1.5).toFixed(2));
       if (!last) {
@@ -321,10 +333,15 @@
           li.classList.toggle("on", on);
           li.classList.toggle("now", on && (i === 0 ? p < 0.12 : i <= 5 ? !reached[i] && p < 1 : t < T.bars + 300));
         });
-        probs.set(t > T.bars ? f.p : null, f.action);
+        const bars = t > T.bars;
+        if (bars !== barsShown) { probs.set(bars ? f.p : null, f.action); barsShown = bars; }
       }
-      if (playing && onScreen && t > T.next + (last ? 1400 : 0)) { show((k + 1) % run.N); return; }
-      if (playing && onScreen) raf = requestAnimationFrame(tick);
+      const end = T.next + (last ? 1400 : 0);
+      if (!playing || !onScreen) return;
+      if (t > end) { show((k + 1) % run.N); return; }
+      // frames only while the scan and the bars move; the rest of the step is a still picture
+      if (!last && t < T.bars + 400) raf = requestAnimationFrame(tick);
+      else timer = setTimeout(() => tick(performance.now()), end - t + 5);
     }
 
     function setPlaying(on) {
@@ -334,7 +351,7 @@
       if (on) { t0 = performance.now() - Math.min(performance.now() - t0, T.next); tick(performance.now()); }
     }
     playBtn.addEventListener("click", () => setPlaying(!playing));
-    watchVisible($("#hero"), (v) => { onScreen = v; if (v && playing) tick(performance.now()); });
+    watchVisible($("#hero"), (v) => { onScreen = v; if (v && playing) tick(performance.now()); else { cancelAnimationFrame(raf); clearTimeout(timer); } });
     document.addEventListener("visibilitychange", () => { onScreen = !document.hidden; if (onScreen && playing) { t0 = performance.now() - 200; tick(performance.now()); } });
     addEventListener("resize", () => drawMap(mapCv, run, k));
     setPlaying(playing);
@@ -482,7 +499,7 @@
     }
 
     function select(i) {
-      const sc = SCENARIOS[i], run = byId[sc.id], f = run.frames[sc.k];
+      const sc = SCENARIOS[i], run = prepRun(byId[sc.id]), f = run.frames[sc.k];
       cur = { run, f, sc };
       tabBtns.forEach((b, j) => b.setAttribute("aria-selected", String(j === i)));
       rgb.src = media(run.id, sc.k);
@@ -533,7 +550,7 @@
 
     function select(i, step) {
       ri = i;
-      const run = runs[ri];
+      const run = prepRun(runs[ri]);
       cards.forEach((c, j) => c.b.setAttribute("aria-pressed", String(j === i)));
       metaEl.textContent = `${run.subset.replace("_", " ")} · ${run.scene} · episode ${run.episode}`;
       q.textContent = "“" + run.instruction + "”";
@@ -843,8 +860,6 @@
     $("#latency-table").append(h("table", { class: "data-table" },
       h("thead", null, h("tr", null, h("th", { text: "Setup" }), parts.map((p) => h("th", { text: p[1] })), h("th", { text: "Whole step" }), h("th", { text: "Steps" }))),
       h("tbody", null, groups.map(([name, g]) => h("tr", null, h("td", { text: name }), parts.map((p) => h("td", { text: g[p[0]].toFixed(3) + " s" })), h("td", { text: g.step.toFixed(3) + " s" }), h("td", { text: g.steps.toLocaleString("en-US") }))))));
-    const kpi = $$(".kpi span")[2];
-    if (kpi && st.all) kpi.textContent = `images seen by Jev, the decision model: it reads only text facts, about ${(st.all.tokens / 1000).toFixed(1)}k tokens per step`;
   }
 
   // =====================================================================================================
@@ -887,7 +902,7 @@
   function initField() {
     const cv = $("#field"), heat = [[246, 213, 67], [243, 118, 27], [180, 51, 89], [85, 15, 109]];
     const col = (t) => { const x = clamp(t, 0, 0.999) * 3, i = Math.floor(x), f = x - i, a = heat[i], b = heat[i + 1]; return [a[0] + (b[0] - a[0]) * f, a[1] + (b[1] - a[1]) * f, a[2] + (b[2] - a[2]) * f]; };
-    const pts = Array.from({ length: 640 }, () => spawn({}, true));
+    const pts = Array.from({ length: 380 }, () => spawn({}, true));
     function spawn(p, anywhere) {
       p.x = (Math.random() * 2 - 1) * 9;
       p.z = anywhere ? 1 + Math.random() * 34 : 30 + Math.random() * 6;
@@ -898,8 +913,9 @@
     }
     let raf = 0, run = !reduced, last = performance.now();
     function frame(now) {
-      const dt = Math.min(50, now - last); last = now;
-      const { g, W, H } = sizeCanvas(cv);
+      if (run && now - last < 33) { raf = requestAnimationFrame(frame); return; } // 30 frames a second is plenty for a backdrop
+      const dt = Math.min(66, now - last); last = now;
+      const { g, W, H } = sizeCanvas(cv, 0, 0, 1);
       const f = W * 0.58, hy = H * 0.3, cx = W * 0.5;
       for (const p of pts) {
         if (run) { p.z -= dt * 0.0012; if (p.z < 0.7) spawn(p, false); }
@@ -907,12 +923,12 @@
         if (sx < -10 || sx > W + 10 || sy < -10 || sy > H + 10) continue;
         const t = (Math.log(p.z) - Math.log(0.7)) / (Math.log(36) - Math.log(0.7)), c = col(t);
         const a = Math.min(1, (36 - p.z) / 8) * Math.min(1, (p.z - 0.7) / 1.5) * 0.7, r = Math.max(0.6, 3 / Math.sqrt(p.z));
-        g.fillStyle = `rgba(${c[0] | 0},${c[1] | 0},${c[2] | 0},${a.toFixed(3)})`;
-        g.beginPath(); g.arc(sx, sy, r, 0, Math.PI * 2); g.fill();
+        g.fillStyle = `rgba(${c[0] | 0},${c[1] | 0},${c[2] | 0},${a.toFixed(2)})`;
+        g.fillRect(sx - r, sy - r, 2 * r, 2 * r);
       }
       if (run) raf = requestAnimationFrame(frame);
     }
-    watchVisible(heroEl, (v) => { cancelAnimationFrame(raf); run = v && !reduced; last = performance.now(); raf = requestAnimationFrame(frame); });
+    watchVisible(heroEl, (v) => { cancelAnimationFrame(raf); heroEl.classList.toggle("idle", !v); run = v && !reduced; last = performance.now() - 40; raf = requestAnimationFrame(frame); });
     addEventListener("resize", () => { if (!run) requestAnimationFrame(frame); });
     requestAnimationFrame(frame);
   }
@@ -959,16 +975,20 @@
   initKPIs();
   initField();
   Promise.all([getJSON("data/featured.json"), getJSON("data/runs.json"), getJSON("data/stats.json")]).then(([featured, runs, stats]) => {
-    featured.forEach(prepRun);
+    featured.forEach((r) => { r.N = r.frames.length; r.name = typeName(r.target); }); // cheap; the cells are decoded on first use
     const byId = Object.fromEntries(featured.map((r) => [r.id, r]));
     const featuredIds = {};
     featured.forEach((r) => { featuredIds[SUBSETS.findIndex((x) => x[0] === r.subset) + ":" + r.episode] = r.id; });
     initFan(byId.pasta.frames[0]);
     initHero(byId.pasta);
-    initAnatomy(byId);
-    const theater = initTheater(featured);
-    initAll(runs, featuredIds, theater);
-    initLatency(stats);
+    const kpi = $$(".kpi span")[2];
+    if (kpi && stats.all) kpi.textContent = `images seen by Jev, the decision model: it reads only text facts, about ${(stats.all.tokens / 1000).toFixed(1)}k tokens per step`;
+    let theater = null;
+    const theaterNow = () => theater || (theater = initTheater(featured));
+    nearView($("#anatomy"), () => initAnatomy(byId));
+    nearView($("#theater"), theaterNow);
+    nearView($("#atlas"), () => initAll(runs, featuredIds, { play: (id) => theaterNow().play(id) }));
+    nearView($("#latency"), () => initLatency(stats));
   }).catch((err) => {
     console.error(err);
     $$("#hero, #anatomy, #theater").forEach((el) => el.prepend(h("p", { class: "cell-note", text: "The recorded runs could not be loaded: " + err.message })));
