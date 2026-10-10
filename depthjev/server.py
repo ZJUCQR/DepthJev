@@ -19,6 +19,7 @@ from pathlib import Path
 from flask import Flask, jsonify, request
 from PIL import Image
 
+from depthjev.decision.jev import DEFAULT_MODEL
 from depthjev.decision.policy import FALLBACK_ROTATE, Policy, build_response
 
 log = logging.getLogger("depthjev.server")
@@ -137,9 +138,9 @@ def parse_args(argv=None):
         help="local copy of google/owlv2-base-patch16-ensemble",
     )
     flag("detection-threshold", 0.1, type=float, help="OWLv2 score threshold")
-    flag("jev-model", "jev-latest", help="Jev model name")
+    flag("jev-model", DEFAULT_MODEL, help="Jev model name")
     flag("jev-timeout", 20.0, type=float, help="seconds per Jev request; the SDK retries twice on top")
-    flag("log-dir", str(REPO / "logs/server"), help="one JSON line per request goes to <log-dir>/<run-name>.jsonl")
+    flag("log-dir", str(REPO / "logs"), help="one JSON line per request goes to <log-dir>/<run-name>.jsonl")
     flag("run-name", time.strftime("%Y%m%d_%H%M%S"), help="names the request log")
     return p.parse_args(argv)
 

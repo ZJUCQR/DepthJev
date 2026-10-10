@@ -4,7 +4,7 @@
 #
 #   bash scripts/run.sh [RUN_NAME] [--sets LIST] [--ratio R] [--gpus IDS] [--parallel]
 #
-#   RUN_NAME     default smoke. Requests are logged to logs/server/<run>.jsonl, EmbodiedBench writes its
+#   RUN_NAME     default smoke. Requests are logged to logs/<run>.jsonl, EmbodiedBench writes its
 #                results to third_party/EmbodiedBench/running/eb_nav/depthjev_<run>/.
 #   --sets LIST  comma-separated subsets (base, common_sense, complex_instruction, visual_appearance,
 #                long_horizon) or all; default base.
@@ -48,7 +48,7 @@ if [ -z "$GPUS" ]; then
     GPUS=${CUDA_VISIBLE_DEVICES:-$(nvidia-smi --query-gpu=index --format=csv,noheader 2>/dev/null | paste -sd, - || true)}
 fi
 IFS=, read -r -a GPU_LIST <<< "${GPUS:-0}"
-mkdir -p "$REPO/logs/server"
+mkdir -p "$REPO/logs"
 
 # One server and one evaluator: run_slot <run> <sets> <gpu> <port> <display>. Both get their own process
 # group, so stop_slot also stops the AI2-THOR and Xvfb processes the evaluator started.
@@ -59,8 +59,8 @@ stop_slot() {
 }
 run_slot() {
     local run=$1 sets=$2 gpu=$3 port=$4 display=$5
-    local server_log="$REPO/logs/server/$run.server.log" eval_log="$REPO/logs/eval_$run.log"
-    local jsonl="$REPO/logs/server/$run.jsonl" stall=0 last_n=-1 n
+    local server_log="$REPO/logs/$run.server.log" eval_log="$REPO/logs/$run.eval.log"
+    local jsonl="$REPO/logs/$run.jsonl" stall=0 last_n=-1 n
     say() { echo "[$run] $*"; }
     if ss -ltn 2>/dev/null | grep -qE "[:.]$port[[:space:]]"; then
         say "port $port is already in use (stale server?)"; return 1

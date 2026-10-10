@@ -177,7 +177,7 @@ bash scripts/run.sh full --sets all --ratio 1 --parallel  # one server per subse
 | `--gpus` | visible GPUs | CUDA devices for the servers |
 | `--parallel` | off | one server + evaluator per subset |
 
-The run prints its report at the end; `python -m depthjev.evaluation.report RUN_NAME --ratio R` prints it again later.
+Each request is logged to `logs/RUN_NAME.jsonl`, next to the server and evaluator output, and EmbodiedBench writes the episodes, frames included, to `third_party/EmbodiedBench/running/eb_nav/depthjev_RUN_NAME/`. The run prints its report at the end; `python -m depthjev.evaluation.report RUN_NAME --ratio R` prints it again from these files.
 
 <details>
 <summary><b>Server and evaluator in separate terminals</b></summary>
@@ -195,12 +195,16 @@ The server listens on `127.0.0.1` by default. For an evaluator on another machin
 
 There is no configuration file. Server settings are flags of `python -m depthjev.server` (`bash scripts/server.sh --help`), and each flag can also be set as an environment variable: `--jev-model` as `DEPTHJEV_JEV_MODEL`, and so on.
 
-| Flag | Default |
-| --- | --- |
-| `--da3-dir`, `--owlv2-dir` | `checkpoints/DA3METRIC-LARGE`, `checkpoints/owlv2-base-patch16-ensemble` |
-| `--jev-model`, `--jev-timeout` | `jev-latest`, `20` |
-| `--detection-threshold` | `0.1` |
-| `--host`, `--port` | `127.0.0.1`, `23333` |
+| Flag | Default | Description |
+| --- | --- | --- |
+| `--da3-dir` | `checkpoints/DA3METRIC-LARGE` | Depth Anything 3 checkpoint |
+| `--owlv2-dir` | `checkpoints/owlv2-base-patch16-ensemble` | OWLv2 checkpoint |
+| `--device` | `cuda` | torch device for both models |
+| `--detection-threshold` | `0.1` | OWLv2 score threshold |
+| `--jev-model` | `jev-latest` | Jev model name |
+| `--jev-timeout` | `20` | seconds per Jev request; the SDK retries twice on top |
+| `--host`, `--port` | `127.0.0.1`, `23333` | address the server listens on |
+| `--log-dir`, `--run-name` | `logs`, a timestamp | the request log is `<log-dir>/<run-name>.jsonl` |
 
 The scripts also read `DEPTHJEV_SERVER_ENV` and `DEPTHJEV_EVAL_ENV`, the two environments (default `envs/depthjev` and `envs/depthjev-eval`), and `DEPTHJEV_PORT`.
 

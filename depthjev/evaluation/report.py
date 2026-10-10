@@ -2,7 +2,7 @@
 
     python -m depthjev.evaluation.report <run_name> [<run_name> ...] [--ratio r]
 
-For each run it reads logs/server/<run_name>.jsonl and third_party/EmbodiedBench/running/eb_nav/depthjev_<run_name>/; several runs (e.g. one per subset with scripts/run.sh --parallel) are merged. It uses only the standard library and stays Python 3.9-compatible, because scripts/run.sh runs it in the evaluation environment.
+For each run it reads logs/<run_name>.jsonl and third_party/EmbodiedBench/running/eb_nav/depthjev_<run_name>/; several runs (e.g. one per subset with scripts/run.sh --parallel) are merged. It uses only the standard library and stays Python 3.9-compatible, because scripts/run.sh runs it in the evaluation environment.
 """
 
 import argparse
@@ -27,7 +27,7 @@ def pct(xs, p):
 def load_rows(runs):
     rows = []
     for run in runs:
-        path = REPO / "logs/server" / f"{run}.jsonl"
+        path = REPO / "logs" / f"{run}.jsonl"
         if path.exists():
             rows += [json.loads(line) for line in open(path, encoding="utf-8") if line.strip()]
     return rows
@@ -143,7 +143,7 @@ def main(argv=None):
         prog="python -m depthjev.evaluation.report",
         description="Latency, success and per-episode tables of DepthJev runs.",
     )
-    parser.add_argument("runs", nargs="*", default=["full"], help="run names (logs/server/<run>.jsonl)")
+    parser.add_argument("runs", nargs="*", default=["full"], help="run names (logs/<run>.jsonl)")
     parser.add_argument("--ratio", type=float, default=1.0, help="the down_sample_ratio the runs used")
     args = parser.parse_args(argv)
     rows = load_rows(args.runs)

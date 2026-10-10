@@ -5,7 +5,7 @@
 #   bash scripts/server.sh --host 0.0.0.0       # for an evaluator on another machine
 #
 #   DEPTHJEV_SERVER_ENV  Python environment of the server, default envs/depthjev
-#   DEPTHJEV_RUN_NAME    names the request log logs/server/<run>.jsonl, default a UTC timestamp
+#   DEPTHJEV_RUN_NAME    names the request log logs/<run>.jsonl, default a UTC timestamp
 set -euo pipefail
 REPO=$(cd "$(dirname "$0")/.." && pwd)
 cd "$REPO"

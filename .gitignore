@@ -11,16 +11,9 @@ logs/
 # python
 __pycache__/
 *.py[cod]
-*.egg-info/
 .ruff_cache/
 .venv/
-venv/
-build/
-dist/
 
 # operating system metadata
 .DS_Store
 Thumbs.db
-
-# editable sources of the README figures
-assets/*.svg

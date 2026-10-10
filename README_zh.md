@@ -177,7 +177,7 @@ bash scripts/run.sh full --sets all --ratio 1 --parallel  # 每个子集一个�
 | `--gpus` | 可见的 GPU | 服务用的 CUDA 设备 |
 | `--parallel` | 关 | 每个子集一个服务 + 一个评测 |
 
-运行结束时会打印报告；之后可以用 `python -m depthjev.evaluation.report RUN_NAME --ratio R` 再次查看。
+每个请求记录在 `logs/RUN_NAME.jsonl`（同目录下还有服务端和评测端的输出），EmbodiedBench 把各回合结果（含画面）写到 `third_party/EmbodiedBench/running/eb_nav/depthjev_RUN_NAME/`。运行结束时会打印报告；之后可以用 `python -m depthjev.evaluation.report RUN_NAME --ratio R` 从这些文件重新生成。
 
 <details>
 <summary><b>服务和评测分两个终端跑</b></summary>
@@ -195,12 +195,16 @@ SERVER_URL=http://127.0.0.1:23333/process bash scripts/eval.sh exp_name=dev eval
 
 仓库没有配置文件。服务端设置都是 `python -m depthjev.server` 的命令行参数（见 `bash scripts/server.sh --help`），每个参数也可以用环境变量设置：`--jev-model` 对应 `DEPTHJEV_JEV_MODEL`，其余依此类推。
 
-| 参数 | 默认值 |
-| --- | --- |
-| `--da3-dir`、`--owlv2-dir` | `checkpoints/DA3METRIC-LARGE`、`checkpoints/owlv2-base-patch16-ensemble` |
-| `--jev-model`、`--jev-timeout` | `jev-latest`、`20` |
-| `--detection-threshold` | `0.1` |
-| `--host`、`--port` | `127.0.0.1`、`23333` |
+| 参数 | 默认值 | 说明 |
+| --- | --- | --- |
+| `--da3-dir` | `checkpoints/DA3METRIC-LARGE` | Depth Anything 3 权重 |
+| `--owlv2-dir` | `checkpoints/owlv2-base-patch16-ensemble` | OWLv2 权重 |
+| `--device` | `cuda` | 两个模型使用的 torch 设备 |
+| `--detection-threshold` | `0.1` | OWLv2 分数阈值 |
+| `--jev-model` | `jev-latest` | Jev 模型名 |
+| `--jev-timeout` | `20` | 每次 Jev 请求的超时秒数，SDK 另外重试两次 |
+| `--host`、`--port` | `127.0.0.1`、`23333` | 服务监听地址 |
+| `--log-dir`、`--run-name` | `logs`、时间戳 | 请求日志为 `<log-dir>/<run-name>.jsonl` |
 
 脚本还会读取 `DEPTHJEV_SERVER_ENV` 和 `DEPTHJEV_EVAL_ENV` 这两个环境路径（默认 `envs/depthjev` 和 `envs/depthjev-eval`），以及 `DEPTHJEV_PORT`。
 
