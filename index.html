@@ -8,7 +8,7 @@
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://zjucqr.github.io/DepthJev/">
 <meta property="og:title" content="DepthJev: Turning Depth into Text for Embodied Navigation">
-<meta property="og:description" content="46.7% on all 300 EB-Navigation episodes with a decision model that reads only text, above Claude-3.5-Sonnet with images.">
+<meta property="og:description" content="46.7% on all 300 EB-Navigation episodes with a decision model that reads only text.">
 <meta property="og:image" content="https://zjucqr.github.io/DepthJev/media/og.jpg">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#060912">
@@ -56,7 +56,7 @@
   <div class="wrap topbar-in">
     <a class="brand" href="#top" aria-label="DepthJev, back to top"><svg aria-hidden="true"><use href="#i-logo"/></svg>DepthJev</a>
     <nav aria-label="Sections">
-      <a href="#method">Method</a><a href="#results">Results</a><a href="#runs">Runs</a><a href="#all" class="nav-2">All 300</a><a href="#cite" class="nav-2">Cite</a>
+      <a href="#method">Method</a><a href="#runs">Runs</a><a href="#all">Results</a><a href="#cite" class="nav-2">Cite</a>
     </nav>
     <div class="topbar-actions">
       <button class="icon-btn" id="theme" type="button" aria-label="Switch between light and dark"><svg class="i-sun"><use href="#i-sun"/></svg><svg class="i-moon"><use href="#i-moon"/></svg></button>
@@ -74,11 +74,11 @@
       <p class="chip-row"><span class="chip"><i class="pulse"></i>EB-Navigation · 300 episodes</span><span class="chip ghost">Text-only decision model</span></p>
       <h1>Depth<span class="jev">Jev</span></h1>
       <p class="subtitle">Turning depth into text for embodied&nbsp;navigation</p>
-      <p class="lede">The decision model never sees a pixel. Every frame becomes metric depth and a target box, the geometry becomes a few lines of text in metres, and Jev picks the next move from that text alone. It succeeds in <b>46.7%</b> of all 300 EB-Navigation episodes, more often than Claude-3.5-Sonnet looking at the&nbsp;image.</p>
+      <p class="lede">The decision model never sees a pixel. Every frame becomes metric depth and a target box, the geometry becomes a few lines of text in metres, and Jev picks the next move from that text alone. It succeeds in <b>46.7%</b> of all 300 EB-Navigation&nbsp;episodes.</p>
       <div class="links">
         <a class="btn primary" href="#runs"><svg><use href="#i-play"/></svg>Watch a run</a>
         <a class="btn glass" href="https://github.com/ZJUCQR/DepthJev"><svg><use href="#i-github"/></svg>Code</a>
-        <a class="btn glass" href="#results">Results</a>
+        <a class="btn glass" href="#all">Results</a>
         <a class="btn glass" href="#cite">BibTeX</a>
       </div>
     </div>
@@ -122,7 +122,7 @@
 
     <div class="kpis" role="list">
       <div class="kpi" role="listitem"><b data-count="46.7" data-dec="1" data-suffix="%">46.7%</b><span>success on all 300 EB&#8209;Navigation episodes</span></div>
-      <div class="kpi" role="listitem"><b>3rd<small>/16</small></b><span>agents; both ahead of it see the image</span></div>
+      <div class="kpi" role="listitem"><b>263<small>/300</small></b><span>instructions read as the right object type</span></div>
       <div class="kpi" role="listitem"><b data-count="0" data-dec="0">0</b><span>images seen by Jev, the decision model: it reads only text facts, about 1.7k tokens per step</span></div>
       <div class="kpi" role="listitem"><b data-count="0.76" data-dec="2" data-suffix=" s">0.76 s</b><span>per step on one H100: depth, detection, decision</span></div>
     </div>
@@ -192,24 +192,9 @@
   </div>
 </section>
 
-<section class="sec" id="results">
-  <div class="wrap">
-    <header class="sec-head"><span class="sec-num" aria-hidden="true">02</span><div><p class="kicker">Results</p><h2>Third of sixteen, without the image</h2><p class="sec-lede">EB-Navigation success rate of 16 agents. The baselines come from Table 3 of the EmbodiedBench paper, and all of them except text-only GPT-4o see the image. DepthJev's decision model reads only the text&nbsp;facts.</p></div></header>
-    <figure class="card" id="board-fig">
-      <div class="chart-head">
-        <b id="board-title">Average over 300 episodes</b>
-        <div class="pills" role="group" aria-label="Subset" id="board-pills"></div>
-      </div>
-      <div class="board" id="board" role="list"></div>
-      <div class="legend"><span><i class="sw sw-ours"></i>DepthJev, text facts only</span><span><i class="sw sw-base"></i>Baseline with the image</span><span><i class="tag-mini">text only</i>Baseline without the image</span></div>
-      <details class="table-view"><summary>Show as a table</summary><div class="table-scroll" id="board-table"></div></details>
-    </figure>
-  </div>
-</section>
-
 <section class="sec" id="runs">
   <div class="wrap">
-    <header class="sec-head"><span class="sec-num" aria-hidden="true">03</span><div><p class="kicker">Examples</p><h2>Six runs, replayed step by step</h2><p class="sec-lede">The frame the robot saw, the depth DA3 measured, the box OWLv2 found, the facts Jev read and the action it chose, all recorded during the full evaluation. The top-down path is rebuilt from the actions and matches the simulator's distance to the target at every step. Runs play on their own; click any action to&nbsp;inspect&nbsp;it.</p></div></header>
+    <header class="sec-head"><span class="sec-num" aria-hidden="true">02</span><div><p class="kicker">Examples</p><h2>Six runs, replayed step by step</h2><p class="sec-lede">The frame the robot saw, the depth DA3 measured, the box OWLv2 found, the facts Jev read and the action it chose, all recorded during the full evaluation. The top-down path is rebuilt from the actions and matches the simulator's distance to the target at every step. Runs play on their own; click any action to&nbsp;inspect&nbsp;it.</p></div></header>
     <div class="cases" id="cases" role="group" aria-label="Recorded runs"></div>
     <div class="theater card" id="theater">
       <div class="th-stage">
@@ -241,7 +226,7 @@
 
 <section class="sec" id="all">
   <div class="wrap">
-    <header class="sec-head"><span class="sec-num" aria-hidden="true">04</span><div><p class="kicker">Every episode</p><h2>All 300 episodes at a glance</h2><p class="sec-lede">EB-Navigation asks for the same 60 scenes and targets in five instruction styles, so each column below is one scene and target, and each square is one episode. Twelve scenes are solved under all five instructions and 22 under none: the scene decides more than the&nbsp;wording.</p></div></header>
+    <header class="sec-head"><span class="sec-num" aria-hidden="true">03</span><div><p class="kicker">Results</p><h2>All 300 episodes at a glance</h2><p class="sec-lede">EB-Navigation asks for the same 60 scenes and targets in five instruction styles, so each column below is one scene and target, and each square is one episode. Twelve scenes are solved under all five instructions and 22 under none: the scene decides more than the&nbsp;wording.</p></div></header>
     <div class="filters" id="all-pills" role="group" aria-label="Instruction style"></div>
     <figure class="card atlas-fig">
       <div class="atlas-wrap">
@@ -261,7 +246,7 @@
 
 <section class="sec" id="speed">
   <div class="wrap">
-    <header class="sec-head"><span class="sec-num" aria-hidden="true">05</span><div><p class="kicker">Latency</p><h2>Fast enough for a robot</h2><p class="sec-lede">Mean server time per step on one H100. The three models run one after the other, and Jev's answer is a network request. Three runs sharing one GPU still finish a step in about a&nbsp;second.</p></div></header>
+    <header class="sec-head"><span class="sec-num" aria-hidden="true">04</span><div><p class="kicker">Latency</p><h2>Fast enough for a robot</h2><p class="sec-lede">Mean server time per step on one H100. The three models run one after the other, and Jev's answer is a network request. Three runs sharing one GPU still finish a step in about a&nbsp;second.</p></div></header>
     <figure class="card" id="latency-fig">
       <div class="legend legend-top" id="latency-legend"></div>
       <div class="latency" id="latency"></div>
@@ -273,7 +258,7 @@
 
 <section class="sec" id="failures">
   <div class="wrap">
-    <header class="sec-head"><span class="sec-num" aria-hidden="true">06</span><div><p class="kicker">Limits</p><h2>Where it fails</h2><p class="sec-lede">160 episodes end without reaching the target. The largest group starts in perception: the target is rarely detected, or another object is taken for&nbsp;it.</p></div></header>
+    <header class="sec-head"><span class="sec-num" aria-hidden="true">05</span><div><p class="kicker">Limits</p><h2>Where it fails</h2><p class="sec-lede">160 episodes end without reaching the target. The largest group starts in perception: the target is rarely detected, or another object is taken for&nbsp;it.</p></div></header>
     <div class="fail-grid">
       <figure class="card"><div class="fails" id="fails"></div></figure>
       <ul class="notes">
@@ -310,7 +295,7 @@
         </ul>
       </div>
     </div>
-    <p class="provenance">All DepthJev numbers come from one full EB-Navigation run (300 episodes) on an H100; baselines are Table 3 of the EmbodiedBench paper. Frames, boxes, facts and Jev's probabilities are the recorded ones. The depth maps shown here were recomputed on CPU with DepthJev's own DA3 pipeline and agree with the recorded free-space measurements within 2&nbsp;cm. Top-down paths are rebuilt from the actions on AI2-THOR's 0.1&nbsp;m grid and reproduce the simulator's distance to the target at every step.</p>
+    <p class="provenance">All DepthJev numbers come from one full EB-Navigation run (300 episodes) on an H100. Frames, boxes, facts and Jev's probabilities are the recorded ones. The depth maps shown here were recomputed on CPU with DepthJev's own DA3 pipeline and agree with the recorded free-space measurements within 2&nbsp;cm. Top-down paths are rebuilt from the actions on AI2-THOR's 0.1&nbsp;m grid and reproduce the simulator's distance to the target at every step.</p>
     <p class="foot-links"><a class="brand" href="#top"><svg aria-hidden="true"><use href="#i-logo"/></svg>DepthJev</a><span>Apache-2.0</span><a href="https://github.com/ZJUCQR/DepthJev"><svg><use href="#i-github"/></svg>ZJUCQR/DepthJev</a></p>
   </div>
 </footer>

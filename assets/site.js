@@ -508,78 +508,7 @@
   }
 
   // =====================================================================================================
-  // 02: leaderboard
-  // =====================================================================================================
-  const BOARD = [
-    ["GPT-4o", "image", [57.7, 55.0, 60.0, 58.3, 60.0, 55.0]],
-    ["GPT-4o-mini", "image", [32.8, 31.7, 33.3, 35.0, 28.3, 33.3]],
-    ["Claude-3.5-Sonnet", "image", [44.7, 66.7, 51.7, 41.7, 36.7, 26.7]],
-    ["Gemini-1.5-Pro", "image", [24.3, 23.3, 25.0, 25.0, 28.3, 20.0]],
-    ["Gemini-2.0-flash", "image", [48.7, 63.3, 65.0, 50.0, 51.7, 13.3]],
-    ["Gemini-1.5-flash", "image", [41.7, 56.7, 50.0, 46.7, 50.0, 5.0]],
-    ["GPT-4o", "text", [17.4, 21.7, 21.7, 26.7, 16.7, 0.0]],
-    ["GPT-4o-mini", "text", [8.3, 3.3, 13.3, 10.0, 15.0, 0.0]],
-    ["Llama-3.2-90B-Vision-Ins", "image", [30.0, 48.3, 23.3, 38.3, 33.3, 6.7]],
-    ["Llama-3.2-11B-Vision-Ins", "image", [21.4, 23.3, 21.7, 26.7, 18.3, 17.0]],
-    ["InternVL2.5-78B", "image", [30.7, 36.7, 38.3, 33.3, 21.7, 23.3]],
-    ["InternVL2.5-38B", "image", [30.3, 35.0, 28.3, 38.3, 26.7, 23.3]],
-    ["InternVL2.5-8B", "image", [21.3, 35.0, 23.3, 21.7, 26.7, 0.0]],
-    ["Qwen2-VL-72B-Ins", "image", [21.2, 26.7, 30.0, 28.3, 16.0, 5.0]],
-    ["Qwen2-VL-7B-Ins", "image", [14.0, 26.7, 10.0, 15.0, 15.0, 3.3]],
-    ["DepthJev", "ours", [46.7, 53.3, 51.7, 50.0, 36.7, 41.7]],
-  ];
-  const BOARD_COLS = ["Average", "Base", "Common sense", "Complex instruction", "Visual appearance", "Long horizon"];
-
-  function initBoard() {
-    const board = $("#board"), pills = $("#board-pills"), title = $("#board-title");
-    let col = 0, shown = false;
-    const rows = BOARD.map(([name, kind, vals]) => {
-      const bar = h("div", { class: "bar" }), val = h("span", { class: "val" }), rk = h("span", { class: "rk" }), badge = kind === "ours" ? h("span", { class: "badge" }) : null;
-      const el = h("div", { class: "row" + (kind === "ours" ? " ours" : ""), role: "listitem" },
-        h("div", { class: "nm" }, rk, h("span", { text: name }), kind === "text" ? h("i", { class: "tag-mini", text: "text only" }) : null, badge),
-        h("div", { class: "trk" }, bar, val));
-      const row = { el, bar, val, rk, badge, name, kind, vals };
-      el.addEventListener("pointermove", (e) => showTip([h("div", { class: "tv", text: vals[col].toFixed(1) + "%" }), h("div", { text: name + (kind === "text" ? " · text only" : kind === "ours" ? " · text facts only" : " · image + text") }), h("div", { class: "tl", text: BOARD_COLS[col] + " · rank " + rank(row, col) + " of 16" })], e.clientX, e.clientY));
-      el.addEventListener("pointerleave", hideTip);
-      board.append(el);
-      return row;
-    });
-    const rank = (row, c) => 1 + rows.filter((r) => r.vals[c] > row.vals[c]).length;
-    BOARD_COLS.forEach((c, i) => {
-      const b = h("button", { class: "pill", type: "button", "aria-pressed": String(i === 0), text: c });
-      b.addEventListener("click", () => { $$(".pill", pills).forEach((x) => x.setAttribute("aria-pressed", String(x === b))); select(i); });
-      pills.append(b);
-    });
-    function select(c) {
-      col = c;
-      title.textContent = BOARD_COLS[c] + (c === 0 ? " over 300 episodes" : " · 60 episodes");
-      const first = new Map(rows.map((r) => [r, r.el.getBoundingClientRect().top]));
-      const order = rows.slice().sort((a, b) => b.vals[c] - a.vals[c] || (a.kind === "ours" ? -1 : b.kind === "ours" ? 1 : 0));
-      order.forEach((r) => board.append(r.el));
-      order.forEach((r) => {
-        const rk = rank(r, c), tied = rows.some((o) => o !== r && o.vals[c] === r.vals[c]);
-        r.rk.textContent = rk;
-        if (r.badge) r.badge.textContent = "#" + rk + (tied ? " tied" : "");
-        r.val.textContent = r.vals[c].toFixed(1);
-        const w = shown ? (r.vals[c] / 70) * 100 + "%" : "0%";
-        r.bar.style.width = w;
-        r.bar.parentNode.style.setProperty("--w", w);
-        if (!reduced && first.size) {
-          const dy = first.get(r) - r.el.getBoundingClientRect().top;
-          if (dy) { r.el.style.transition = "none"; r.el.style.transform = `translateY(${dy}px)`; requestAnimationFrame(() => requestAnimationFrame(() => { r.el.style.transition = "transform .7s cubic-bezier(.22,1,.36,1)"; r.el.style.transform = ""; })); }
-        }
-      });
-    }
-    select(0);
-    whenVisible(board, () => { shown = true; select(col); }, 0.2);
-    // table view
-    $("#board-table").append(h("table", { class: "data-table" },
-      h("thead", null, h("tr", null, h("th", { text: "Agent" }), h("th", { text: "Reads" }), BOARD_COLS.map((c) => h("th", { text: c })))),
-      h("tbody", null, BOARD.slice().sort((a, b) => b[2][0] - a[2][0]).map(([n, kind, v]) => h("tr", { class: kind === "ours" ? "ours" : null }, h("td", { text: n }), h("td", { text: kind === "image" ? "image + text" : kind === "text" ? "text" : "text facts" }), v.map((x) => h("td", { text: x.toFixed(1) })))))));
-  }
-
-  // =====================================================================================================
-  // 03: six runs, replayed
+  // 02: six runs, replayed
   // =====================================================================================================
   function initTheater(runs) {
     const cases = $("#cases"), view = $("#th-view"), rgb = $("#th-rgb"), dep = $("#th-depth"), ov = $("#th-overlay");
@@ -729,7 +658,7 @@
   }
 
   // =====================================================================================================
-  // 04: all 300 episodes
+  // 03: all 300 episodes
   // =====================================================================================================
   function initAll(runs, featuredIds, theater) {
     const atlas = $("#atlas"), side = $("#atlas-side"), pills = $("#all-pills"), cv = $("#curves"), sub = $("#curves-sub");
@@ -885,7 +814,7 @@
   }
 
   // =====================================================================================================
-  // 05: latency
+  // 04: latency
   // =====================================================================================================
   function initLatency(st) {
     const parts = [["depth", "DA3 depth", "s-depth"], ["detect", "OWLv2 detection", "s-det"], ["jev", "Jev decision", "s-jev"], ["rest", "Rest of the step", "s-rest"]];
@@ -919,7 +848,7 @@
   }
 
   // =====================================================================================================
-  // 06: failures; copy buttons, KPIs, the hero field
+  // 05: failures; copy buttons, KPIs, the hero field
   // =====================================================================================================
   function initFails() {
     const F = [["Target rarely detected or wrongly identified", 51], ["Sidestepping left and right without progress", 40], ["Stuck against an obstacle", 32], ["Distance underestimated or a false detection", 27], ["Other", 10]];
@@ -1025,7 +954,6 @@
   }
 
   // ---------- start ----------
-  initBoard();
   initFails();
   initCopy();
   initKPIs();
