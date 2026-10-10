@@ -471,27 +471,12 @@ figcaption b { color: var(--ink); font-weight: 600; }
 .notes li { padding: 16px 18px; border-radius: 16px; background: var(--card); border: 1px solid var(--rule); font-size: 14.5px; color: var(--ink-2); }
 .notes b { color: var(--ink); font-weight: 600; }
 
-/* code */
-.code-grid { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 22px; align-items: start; }
-@media (max-width: 900px) { .code-grid { grid-template-columns: minmax(0, 1fr); } }
-.tree { font: 400 13px/1.25 var(--mono); padding: 18px 16px; }
-.trow { display: grid; grid-template-columns: minmax(0, auto) minmax(0, 1fr); gap: 14px; align-items: baseline; padding: 6px 8px; border-radius: 8px; text-decoration: none; color: var(--ink); }
-a.trow:hover { background: var(--card-2); }
-.trow .tn { white-space: pre; }
-.trow .tn .g { color: var(--muted); }
-.trow .td { font: 400 12.5px/1.4 var(--sans); color: var(--muted); }
-.trow.layer .tn b { font-weight: 600; }
-.trow.layer { margin-top: 4px; }
-.trow .ld { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 6px; vertical-align: 0; }
-.codebox, .bib { position: relative; border-radius: 16px; overflow: hidden; background: #0a0e18; border: 1px solid rgba(255, 255, 255, .08); box-shadow: var(--shadow); }
+/* BibTeX box and its copy button */
+.bib { position: relative; border-radius: 16px; overflow: hidden; background: #0a0e18; border: 1px solid rgba(255, 255, 255, .08); box-shadow: var(--shadow); }
 .codebox-head { display: flex; align-items: center; gap: 10px; padding: 10px 12px 10px 14px; border-bottom: 1px solid rgba(255, 255, 255, .07); font: 500 12px/1 var(--mono); color: #8c96aa; }
-.dots3 { display: inline-flex; gap: 6px; }
-.dots3 i { width: 10px; height: 10px; border-radius: 50%; background: #2a3142; }
-.codebox pre, .bib pre { margin: 0; padding: 16px 18px; overflow-x: auto; font: 400 13px/1.7 var(--mono); color: #e3e7f0; }
-.codebox .c { color: #6f7a8f; }
+.bib pre { margin: 0; padding: 16px 18px; overflow-x: auto; font: 400 13px/1.7 var(--mono); color: #e3e7f0; }
 .copy { margin-left: auto; height: 28px; padding: 0 11px; border-radius: 999px; border: 1px solid rgba(255, 255, 255, .16); background: rgba(255, 255, 255, .06); color: #eef1f7; font: 500 12px/1 var(--sans); cursor: pointer; }
 .copy:hover { background: rgba(255, 255, 255, .12); }
-.quick-note { margin: 14px 0 0; font-size: 14px; color: var(--ink-2); }
 
 /* footer */
 .foot { margin-top: 128px; padding: 88px 0 48px; position: relative; overflow: hidden;

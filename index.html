@@ -56,7 +56,7 @@
   <div class="wrap topbar-in">
     <a class="brand" href="#top" aria-label="DepthJev, back to top"><svg aria-hidden="true"><use href="#i-logo"/></svg>DepthJev</a>
     <nav aria-label="Sections">
-      <a href="#method">Method</a><a href="#results">Results</a><a href="#runs">Runs</a><a href="#all" class="nav-2">All 300</a><a href="#code" class="nav-2">Code</a><a href="#cite" class="nav-2">Cite</a>
+      <a href="#method">Method</a><a href="#results">Results</a><a href="#runs">Runs</a><a href="#all" class="nav-2">All 300</a><a href="#cite" class="nav-2">Cite</a>
     </nav>
     <div class="topbar-actions">
       <button class="icon-btn" id="theme" type="button" aria-label="Switch between light and dark"><svg class="i-sun"><use href="#i-sun"/></svg><svg class="i-moon"><use href="#i-moon"/></svg></button>
@@ -277,28 +277,6 @@
         <li><b>Action constraints.</b> Writing a constraint into the action option itself (“NOT USEFUL NOW: the camera already looks 30 degrees down”) stopped repeated <code>look_down</code> better than a general rule.</li>
         <li><b>Scene difficulty.</b> Across the five instruction styles, the same 12 scenes always succeed and the same 22 always fail. <code>long_horizon</code> also turns the start pose by 180°.</li>
       </ul>
-    </div>
-  </div>
-</section>
-
-<section class="sec" id="code">
-  <div class="wrap">
-    <header class="sec-head"><span class="sec-num" aria-hidden="true">07</span><div><p class="kicker">Code</p><h2>The code follows the pipeline</h2><p class="sec-lede">One sub-package per stage, each importing only the stages before it. The server wraps the step for EmbodiedBench, and the evaluation runs in its own Python&nbsp;3.9 environment.</p></div></header>
-    <div class="code-grid">
-      <div class="tree card" id="tree"></div>
-      <div class="quick">
-        <div class="codebox"><div class="codebox-head"><span class="dots3"><i></i><i></i><i></i></span><span>quick start</span><button class="copy" type="button" data-copy="quick">Copy</button></div><pre id="quick"><span class="c"># clone with the pinned EmbodiedBench and Depth Anything 3</span>
-git clone --recursive https://github.com/ZJUCQR/DepthJev.git
-cd DepthJev
-
-<span class="c"># one requirements file for both environments</span>
-pip install -r requirements.txt
-
-<span class="c"># smoke test with 3 episodes, then all 300</span>
-bash scripts/run.sh
-bash scripts/run.sh full --sets all --ratio 1</pre></div>
-        <p class="quick-note">The two conda environments, the model checkpoints and the Jev key are set up as described in the <a href="https://github.com/ZJUCQR/DepthJev#getting-started">README</a>.</p>
-      </div>
     </div>
   </div>
 </section>

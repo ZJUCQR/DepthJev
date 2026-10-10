@@ -919,41 +919,13 @@
   }
 
   // =====================================================================================================
-  // 06: failures, 07: code tree, copy buttons, KPIs, the hero field
+  // 06: failures; copy buttons, KPIs, the hero field
   // =====================================================================================================
   function initFails() {
     const F = [["Target rarely detected or wrongly identified", 51], ["Sidestepping left and right without progress", 40], ["Stuck against an obstacle", 32], ["Distance underestimated or a false detection", 27], ["Other", 10]];
     const box = $("#fails"), fills = [];
     F.forEach(([label, n]) => { const f = h("div", { class: "ff" }); fills.push([f, n]); box.append(h("div", { class: "frow" }, h("div", { class: "fh" }, h("span", { text: label }), h("b", { text: n })), h("div", { class: "ft" }, f))); });
     whenVisible(box, () => fills.forEach(([f, n]) => { f.style.width = (n / 51) * 100 + "%"; }));
-  }
-
-  function initTree() {
-    const G = "https://github.com/ZJUCQR/DepthJev/";
-    const T = [
-      ["", "depthjev/", "the agent: one sub-package per stage", "tree/main/depthjev", null, true],
-      ["├── ", "perception/", "the frame becomes metres", "tree/main/depthjev/perception", "var(--depth)", true],
-      ["│   ├── ", "depth.py", "Depth Anything 3 metric depth", "blob/main/depthjev/perception/depth.py"],
-      ["│   ├── ", "detection.py", "OWLv2 open-vocabulary detection", "blob/main/depthjev/perception/detection.py"],
-      ["│   └── ", "geometry.py", "floor, free space per sector, step collision, target range", "blob/main/depthjev/perception/geometry.py"],
-      ["├── ", "language/", "metres and history become text", "tree/main/depthjev/language", "var(--textc)", true],
-      ["│   ├── ", "prompt.py", "instruction and action history from the EmbodiedBench prompt", "blob/main/depthjev/language/prompt.py"],
-      ["│   ├── ", "facts.py", "distance bins, move checks, search status, the JSON state", "blob/main/depthjev/language/facts.py"],
-      ["│   ├── ", "actions.py", "the eight actions and how Jev sees them", "blob/main/depthjev/language/actions.py"],
-      ["│   └── ", "objects.py", "the 125 iTHOR object types and detector aliases", "blob/main/depthjev/language/objects.py"],
-      ["├── ", "decision/", "the text becomes an action", "tree/main/depthjev/decision", "var(--jev)", true],
-      ["│   ├── ", "jev.py", "Jev client and its three questions", "blob/main/depthjev/decision/jev.py"],
-      ["│   └── ", "policy.py", "one step: parse, depth, detect, facts, Jev, reply", "blob/main/depthjev/decision/policy.py"],
-      ["├── ", "server.py", "HTTP endpoint for EmbodiedBench", "blob/main/depthjev/server.py"],
-      ["└── ", "evaluation/", "Python 3.9: launch EmbodiedBench, report results", "tree/main/depthjev/evaluation", null, true],
-      ["", "scripts/", "run.sh, server.sh, eval.sh", "tree/main/scripts", null, true],
-      ["", "third_party/", "EmbodiedBench and Depth Anything 3, pinned", "tree/main/third_party", null, true],
-      ["", "requirements.txt", "both environments, chosen by Python version", "blob/main/requirements.txt"],
-    ];
-    const box = $("#tree");
-    T.forEach(([glyph, name, desc, path, color, layer]) => box.append(h("a", { class: "trow" + (layer ? " layer" : ""), href: G + path },
-      h("span", { class: "tn" }, h("span", { class: "g", text: glyph }), color ? h("i", { class: "ld", style: "background:" + color }) : null, layer ? h("b", { text: name }) : name),
-      h("span", { class: "td", text: desc }))));
   }
 
   function initCopy() {
@@ -1055,7 +1027,6 @@
   // ---------- start ----------
   initBoard();
   initFails();
-  initTree();
   initCopy();
   initKPIs();
   initField();
