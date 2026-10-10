@@ -105,21 +105,26 @@ code { font: 400 .9em/1 var(--mono); }
 .hero::after { content: ""; position: absolute; inset: auto 0 0 0; height: 160px; z-index: -1; background: linear-gradient(transparent, #060912); pointer-events: none; }
 .hero-in { position: relative; }
 .hero-text { max-width: 880px; position: relative; }
-.hero-fan { position: absolute; right: 8px; top: -18px; width: min(44vw, 560px); height: auto; pointer-events: none; overflow: visible; }
+.hero-fan { position: absolute; right: 8px; top: -18px; width: min(44vw, 560px); aspect-ratio: 600 / 440; pointer-events: none; }
+.hero-fan svg { display: block; width: 100%; height: 100%; overflow: visible; }
 .hero-fan text { font: 500 11px var(--mono); fill: #8d97ab; letter-spacing: .02em; }
 .hero-fan .fan-ring { fill: none; stroke: rgba(255, 255, 255, .09); stroke-width: 1; }
 .hero-fan .fan-edge { stroke: rgba(255, 255, 255, .13); stroke-width: 1; }
 .hero-fan .fan-free { opacity: .26; }
 .hero-fan .fan-wall { stroke-width: 3; stroke-linecap: round; }
-.hero-fan .fan-beam { transform-box: view-box; transform-origin: 300px 410px; animation: sweep 5.5s ease-in-out infinite alternate; will-change: transform; }
-.hero.idle .fan-beam, .hero.idle .pulse { animation-play-state: paused; }
+/* the beam is an HTML element rotated by the compositor; spans the fan from its origin (300, 410) to y = 10, 28 units wide */
+.fan-beam { position: absolute; left: 47.667%; width: 4.667%; top: 2.273%; height: 90.909%; transform-origin: 50% 100%;
+  background: linear-gradient(to top, rgba(255, 248, 214, .55), rgba(255, 248, 214, 0)); clip-path: polygon(50% 100%, 0 0, 100% 0);
+  animation: sweep 5.5s ease-in-out infinite alternate; will-change: transform; }
+.hero.idle .fan-beam, .hero.idle .pulse::after { animation-play-state: paused; }
 @keyframes sweep { from { transform: rotate(-48deg); } to { transform: rotate(48deg); } }
 @media (max-width: 1320px) { .hero-fan { display: none; } }
 .chip-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; }
 .chip { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 999px; border: 1px solid rgba(255, 255, 255, .14); background: rgba(255, 255, 255, .05); font: 500 12.5px/1.2 var(--sans); color: var(--ink-2); }
 .chip.ghost { background: transparent; }
-.pulse { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 0 rgba(243, 118, 27, .6); animation: pulse 2.4s infinite; }
-@keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(243, 118, 27, .55); } 70% { box-shadow: 0 0 0 9px rgba(243, 118, 27, 0); } 100% { box-shadow: 0 0 0 0 rgba(243, 118, 27, 0); } }
+.pulse { position: relative; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
+.pulse::after { content: ""; position: absolute; inset: 0; border-radius: 50%; background: rgba(243, 118, 27, .6); animation: pulse 2.4s infinite; will-change: transform, opacity; }
+@keyframes pulse { 0% { transform: scale(1); opacity: .8; } 70% { transform: scale(3.4); opacity: 0; } 100% { transform: scale(3.4); opacity: 0; } }
 h1 { margin: 22px 0 0; font: 700 clamp(64px, 12vw, 148px)/.92 var(--display); letter-spacing: -.045em; }
 h1 .jev { background: linear-gradient(100deg, #f6d543 0%, #f3761b 38%, #da4e3c 64%, #b43359 100%); -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 6px 34px rgba(243, 118, 27, .35)); }
 .subtitle { margin: 18px 0 0; font: 500 clamp(20px, 2.6vw, 30px)/1.25 var(--display); letter-spacing: -.015em; color: #f2f4f8; }

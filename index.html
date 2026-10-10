@@ -15,7 +15,11 @@
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="preload" href="assets/fonts/inter.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/sora.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="assets/site.css?v=20261010c">
+<link rel="preload" href="data/featured.json?v=20261010d" as="fetch" crossorigin>
+<link rel="preload" href="data/frames/pasta.json?v=20261010d" as="fetch" crossorigin>
+<link rel="preload" href="media/pasta/00.webp" as="image">
+<link rel="preload" href="media/pasta/00-d.webp" as="image">
+<link rel="stylesheet" href="assets/site.css?v=20261010d">
 <script>try { var t = localStorage.getItem("depthjev-theme"); if (t === "light" || t === "dark") document.documentElement.dataset.theme = t; } catch (e) {}</script>
 </head>
 <body>
@@ -68,7 +72,7 @@
 <header class="hero night" id="top">
   <canvas class="hero-field" id="field" aria-hidden="true"></canvas>
   <div class="wrap hero-in">
-    <svg class="hero-fan" id="fan" viewBox="0 0 600 440" aria-hidden="true"></svg>
+    <div class="hero-fan" aria-hidden="true"><svg id="fan" viewBox="0 0 600 440"></svg><i class="fan-beam"></i></div>
     <div class="hero-text">
       <p class="chip-row"><span class="chip"><i class="pulse"></i>EB-Navigation · 300 episodes</span><span class="chip ghost">Text-only decision model</span></p>
       <h1>Depth<span class="jev">Jev</span></h1>
@@ -91,8 +95,8 @@
         <div class="hero-col">
           <p class="col-lab"><span class="dot dot-depth"></span>Camera <svg class="lab-arrow"><use href="#i-arrow"/></svg> metric depth</p>
           <div class="view" id="hero-view">
-            <img class="view-rgb" alt="Camera frame of the current step" id="hero-rgb">
-            <img class="view-depth" alt="Metric depth from Depth Anything 3" id="hero-depth">
+            <img class="view-rgb" decoding="async" alt="Camera frame of the current step" id="hero-rgb">
+            <img class="view-depth" decoding="async" alt="Metric depth from Depth Anything 3" id="hero-depth">
             <div class="scanline" id="hero-scan"></div>
             <svg class="view-overlay" id="hero-overlay" viewBox="0 0 500 500" preserveAspectRatio="none" aria-hidden="true"></svg>
           </div>
@@ -165,8 +169,8 @@
             <div class="seg" role="group" aria-label="View"><button type="button" data-view="rgb" aria-pressed="true">RGB</button><button type="button" data-view="depth" aria-pressed="false">Depth</button></div>
           </div>
           <div class="view anat-view" id="anat-view">
-            <img class="view-rgb" alt="" id="anat-rgb">
-            <img class="view-depth" alt="" id="anat-depth">
+            <img class="view-rgb" decoding="async" alt="" id="anat-rgb">
+            <img class="view-depth" decoding="async" alt="" id="anat-depth">
             <svg class="view-overlay" id="anat-overlay" viewBox="0 0 500 500" preserveAspectRatio="none" aria-hidden="true"></svg>
             <span class="readout" id="anat-readout" hidden></span>
           </div>
@@ -199,8 +203,8 @@
     <div class="theater card" id="theater">
       <div class="th-stage">
         <div class="view th-view" id="th-view">
-          <img class="view-rgb" alt="" id="th-rgb">
-          <img class="view-depth" alt="" id="th-depth">
+          <img class="view-rgb" decoding="async" alt="" id="th-rgb">
+          <img class="view-depth" decoding="async" alt="" id="th-depth">
           <svg class="view-overlay" id="th-overlay" viewBox="0 0 500 500" preserveAspectRatio="none" aria-hidden="true"></svg>
           <div class="split" id="th-split" role="slider" tabindex="0" aria-label="Drag to compare the camera frame with the depth" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50"><i></i></div>
           <span class="view-tag tag-l">RGB</span><span class="view-tag tag-r">DA3 depth</span>
@@ -301,6 +305,6 @@
 </footer>
 
 <div class="tip" id="tip" role="tooltip" hidden></div>
-<script src="assets/site.js?v=20261010c" defer></script>
+<script src="assets/site.js?v=20261010d" defer></script>
 </body>
 </html>

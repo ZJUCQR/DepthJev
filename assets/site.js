@@ -34,6 +34,16 @@
   const cap = (t) => t.charAt(0).toUpperCase() + t.slice(1);
   const VERSION = new URL(document.currentScript.src).search; // "?v=..." from index.html, so data and code update together
   const getJSON = (url) => fetch(url + VERSION).then((r) => { if (!r.ok) throw new Error(url + " " + r.status); return r.json(); });
+  const framesReq = {};
+  const loadFrames = (run) => framesReq[run.id] || (framesReq[run.id] = getJSON(`data/frames/${run.id}.json`).then((frames) => { run.frames = frames; return run; }));
+  function loadError(err) {
+    console.error(err);
+    const note = h("p", { class: "cell-note", text: "Part of the recorded data could not be loaded: " + err.message + ". Reloading the page usually helps." });
+    ($("#main") || document.body).prepend(note);
+  }
+  function preload(id, k) {
+    for (const depth of [false, true]) { const im = new Image(); im.decoding = "async"; im.src = media(id, k, depth); }
+  }
   const cssVar = (name, el) => getComputedStyle(el || rootEl).getPropertyValue(name).trim();
 
   function whenVisible(el, cb, threshold) {
@@ -152,17 +162,27 @@
     if (!W) return;
     const b = run.bounds, sc = Math.min(W / (2 * b.hw), H / (2 * b.hh)) * 0.96;
     const X = (x) => W / 2 + (x - b.cx) * sc, Y = (y) => H / 2 - (y - b.cy) * sc;
-    // visible floor, accumulated up to step k
-    g.fillStyle = "rgba(120, 148, 196, 0.10)";
-    const fs = Math.max(1.5, 0.1 * sc);
-    for (let j = 0; j <= k; j++) { const a = run.frames[j].mapFloor; for (let i = 0; i < a.length; i += 2) g.fillRect(X(a[i]) - fs / 2, Y(a[i + 1]) - fs / 2, fs, fs); }
-    // obstacles, older steps fainter
-    const os = Math.max(1.2, Math.min(3, 0.05 * sc * 0.8));
-    for (let j = 0; j <= k; j++) {
-      const a = run.frames[j].mapObs;
-      g.fillStyle = j === k ? "rgba(246, 150, 60, 0.8)" : "rgba(243, 118, 27, 0.18)";
-      for (let i = 0; i < a.length; i += 2) g.fillRect(X(a[i]) - os / 2, Y(a[i + 1]) - os / 2, os, os);
+    const fs = Math.max(1.5, 0.1 * sc), os = Math.max(1.2, Math.min(3, 0.05 * sc * 0.8));
+    const cells = (ctx, a, size) => { for (let i = 0; i < a.length; i += 2) ctx.fillRect(X(a[i]) - size / 2, Y(a[i + 1]) - size / 2, size, size); };
+    // the visible floor of steps 0..k and the faint obstacles of steps 0..k-1 accumulate on an offscreen canvas,
+    // so moving one step forward draws one step's cells instead of all of them again
+    let acc = cv._acc;
+    if (!acc || acc.run !== run || acc.w !== cv.width || acc.h !== cv.height || k < acc.floorK) {
+      const c = acc ? acc.canvas : document.createElement("canvas");
+      c.width = cv.width; c.height = cv.height;
+      const ag = c.getContext("2d");
+      ag.setTransform(cv.width / W, 0, 0, cv.height / H, 0, 0);
+      ag.clearRect(0, 0, W, H);
+      acc = cv._acc = { run, w: cv.width, h: cv.height, floorK: -1, obsK: -1, canvas: c, g: ag };
     }
+    acc.g.fillStyle = "rgba(120, 148, 196, 0.10)";
+    for (let j = acc.floorK + 1; j <= k; j++) cells(acc.g, run.frames[j].mapFloor, fs);
+    acc.g.fillStyle = "rgba(243, 118, 27, 0.18)";
+    for (let j = acc.obsK + 1; j < k; j++) cells(acc.g, run.frames[j].mapObs, os);
+    acc.floorK = k; acc.obsK = Math.max(acc.obsK, k - 1);
+    g.drawImage(acc.canvas, 0, 0, W, H);
+    g.fillStyle = "rgba(246, 150, 60, 0.8)";
+    cells(g, run.frames[k].mapObs, os);
     // target and its 1 m success circle
     const tx = X(run.mapTarget[0]), ty = Y(run.mapTarget[1]);
     g.beginPath(); g.arc(tx, ty, 1 * sc, 0, Math.PI * 2);
@@ -250,7 +270,7 @@
     const facts = $("#hero-facts"), tokens = $("#hero-tokens"), meta = $("#hero-meta"), dist = $("#hero-dist");
     const playBtn = $("#hero-play"), mapCv = $("#hero-map");
     $("#hero-instr").textContent = "“" + run.instruction + "”";
-    run.frames.forEach((f, k) => { new Image().src = media(run.id, k); new Image().src = media(run.id, k, true); });
+    let viewW = view.clientWidth;
 
     // sector separators and the bins written under each sector
     const seps = [100, 200, 300, 400].map((x) => s("line", { class: "ov-sep", x1: x, x2: x, y1: 0, y2: 500 }));
@@ -293,6 +313,7 @@
       const f = run.frames[k], last = k === run.N - 1;
       rgb.src = media(run.id, k);
       dep.src = media(run.id, k, true);
+      if (k + 1 < run.N) preload(run.id, k + 1);
       dotBtns.forEach((b, j) => { b.toggleAttribute("aria-current", j === k); if (j === k) b.setAttribute("aria-current", "step"); b.classList.toggle("done", j < k); });
       box.set(last ? null : f, run.name);
       if (!last) {
@@ -322,7 +343,7 @@
       const t = now - t0, last = k === run.N - 1, f = run.frames[k];
       const p = last ? 1 : clamp((t - T.scan0) / (T.scan1 - T.scan0), 0, 1), e = ease(p);
       view.style.setProperty("--reveal", (last ? 0 : e * 100).toFixed(2) + "%");
-      scan.style.setProperty("--scan-x", (e * view.clientWidth).toFixed(1) + "px");
+      scan.style.setProperty("--scan-x", (e * viewW).toFixed(1) + "px");
       view.style.setProperty("--scan-o", p > 0 && p < 1 ? 1 : 0);
       view.style.setProperty("--sep-o", last ? 0 : Math.min(1, p * 1.5).toFixed(2));
       if (!last) {
@@ -353,7 +374,7 @@
     playBtn.addEventListener("click", () => setPlaying(!playing));
     watchVisible($("#hero"), (v) => { onScreen = v; if (v && playing) tick(performance.now()); else { cancelAnimationFrame(raf); clearTimeout(timer); } });
     document.addEventListener("visibilitychange", () => { onScreen = !document.hidden; if (onScreen && playing) { t0 = performance.now() - 200; tick(performance.now()); } });
-    addEventListener("resize", () => drawMap(mapCv, run, k));
+    addEventListener("resize", () => { viewW = view.clientWidth; drawMap(mapCv, run, k); });
     setPlaying(playing);
     show(0, reduced);
   }
@@ -548,10 +569,16 @@
       return { b, prog };
     });
 
+    let selection = 0;
     function select(i, step) {
       ri = i;
-      const run = prepRun(runs[ri]);
+      clearTimeout(timer);
       cards.forEach((c, j) => c.b.setAttribute("aria-pressed", String(j === i)));
+      const mine = ++selection;
+      loadFrames(runs[i]).then(() => { if (mine === selection) fill(i, step); }).catch(loadError);
+    }
+    function fill(i, step) {
+      const run = prepRun(runs[i]);
       metaEl.textContent = `${run.subset.replace("_", " ")} · ${run.scene} · episode ${run.episode}`;
       q.textContent = "“" + run.instruction + "”";
       const r = run.resolved;
@@ -565,14 +592,15 @@
         chain.append(h("li", null, b));
         return b;
       });
-      run.frames.forEach((f, j) => { new Image().src = media(run.id, j); new Image().src = media(run.id, j, true); });
       show(step || 0);
     }
 
     function show(j) {
+      if (!runs[ri].frames) return;
       k = j;
       const run = runs[ri], f = run.frames[k], last = k === run.N - 1;
       rgb.src = media(run.id, k);
+      if (k + 1 < run.N) preload(run.id, k + 1);
       dep.src = media(run.id, k, true);
       rgb.alt = `Step ${k} of ${run.title}: camera frame`;
       box.set(last ? null : f, run.name);
@@ -667,10 +695,11 @@
     });
     setSplit(50);
 
-    themeHooks.push(() => { const run = runs[ri]; drawDist(run, k); });
-    addEventListener("resize", () => { const run = runs[ri]; drawMap(mapCv, run, k); drawDist(run, k); });
+    themeHooks.push(() => { const run = runs[ri]; if (run.frames) drawDist(run, k); });
+    addEventListener("resize", () => { const run = runs[ri]; if (run.frames) { drawMap(mapCv, run, k); drawDist(run, k); } });
     setPlaying(playing);
     select(0, 0);
+    runs.forEach((r, i) => { if (i) setTimeout(() => loadFrames(r), 600 * i); }); // the other runs' frames, one by one in the background
     return { play: (id) => { const i = runs.findIndex((r) => r.id === id); if (i >= 0) { select(i, 0); setPlaying(true); } } };
   }
 
@@ -898,39 +927,33 @@
     }, 0.4);
   }
 
-  // a depth field streaming towards the viewer: points on the floor and on a few obstacles, coloured by distance
+  // a still depth field behind the hero: points on the floor and on a few walls, coloured by distance. Drawn once,
+  // and again after a resize, so it costs nothing while the page runs.
   function initField() {
     const cv = $("#field"), heat = [[246, 213, 67], [243, 118, 27], [180, 51, 89], [85, 15, 109]];
     const col = (t) => { const x = clamp(t, 0, 0.999) * 3, i = Math.floor(x), f = x - i, a = heat[i], b = heat[i + 1]; return [a[0] + (b[0] - a[0]) * f, a[1] + (b[1] - a[1]) * f, a[2] + (b[2] - a[2]) * f]; };
-    const pts = Array.from({ length: 380 }, () => spawn({}, true));
-    function spawn(p, anywhere) {
-      p.x = (Math.random() * 2 - 1) * 9;
-      p.z = anywhere ? 1 + Math.random() * 34 : 30 + Math.random() * 6;
-      const wall = Math.random() < 0.18;
-      p.y = wall ? 1.55 - Math.random() * 2.6 : 1.55;
-      p.x = wall ? (Math.random() < 0.5 ? -1 : 1) * (2.4 + Math.random() * 5) : p.x;
-      return p;
-    }
-    let raf = 0, run = !reduced, last = performance.now();
-    function frame(now) {
-      if (run && now - last < 33) { raf = requestAnimationFrame(frame); return; } // 30 frames a second is plenty for a backdrop
-      const dt = Math.min(66, now - last); last = now;
+    function draw() {
       const { g, W, H } = sizeCanvas(cv, 0, 0, 1);
+      if (!W) return;
+      let seed = 7;
+      const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647; // fixed sequence: the same field on every draw
       const f = W * 0.58, hy = H * 0.3, cx = W * 0.5;
-      for (const p of pts) {
-        if (run) { p.z -= dt * 0.0012; if (p.z < 0.7) spawn(p, false); }
-        const sx = cx + (p.x / p.z) * f, sy = hy + (p.y / p.z) * f;
-        if (sx < -10 || sx > W + 10 || sy < -10 || sy > H + 10) continue;
-        const t = (Math.log(p.z) - Math.log(0.7)) / (Math.log(36) - Math.log(0.7)), c = col(t);
-        const a = Math.min(1, (36 - p.z) / 8) * Math.min(1, (p.z - 0.7) / 1.5) * 0.7, r = Math.max(0.6, 3 / Math.sqrt(p.z));
-        g.fillStyle = `rgba(${c[0] | 0},${c[1] | 0},${c[2] | 0},${a.toFixed(2)})`;
+      for (let n = 0; n < 380; n++) {
+        const wall = rnd() < 0.18, z = 1 + rnd() * 34;
+        const x = wall ? (rnd() < 0.5 ? -1 : 1) * (2.4 + rnd() * 5) : (rnd() * 2 - 1) * 9, y = wall ? 1.55 - rnd() * 2.6 : 1.55;
+        const sx = cx + (x / z) * f, sy = hy + (y / z) * f;
+        if (sx < -10 || sx > W + 10 || sy < -10 || sy > H + 10 || z < 0.7) continue;
+        const t = (Math.log(z) - Math.log(0.7)) / (Math.log(36) - Math.log(0.7)), c = col(t);
+        const al = Math.min(1, (36 - z) / 8) * Math.min(1, (z - 0.7) / 1.5) * 0.7, r = Math.max(0.6, 3 / Math.sqrt(z));
+        g.fillStyle = `rgba(${c[0] | 0},${c[1] | 0},${c[2] | 0},${al.toFixed(2)})`;
         g.fillRect(sx - r, sy - r, 2 * r, 2 * r);
       }
-      if (run) raf = requestAnimationFrame(frame);
     }
-    watchVisible(heroEl, (v) => { cancelAnimationFrame(raf); heroEl.classList.toggle("idle", !v); run = v && !reduced; last = performance.now() - 40; raf = requestAnimationFrame(frame); });
-    addEventListener("resize", () => { if (!run) requestAnimationFrame(frame); });
-    requestAnimationFrame(frame);
+    draw();
+    let rt = 0;
+    addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(draw, 150); });
+    // the beam and the pulse stop while the hero is off screen
+    watchVisible(heroEl, (v) => heroEl.classList.toggle("idle", !v));
   }
 
   // the hero fan: the five sectors seen from above, with the free floor DA3 measured in each (pasta, step 1)
@@ -942,9 +965,7 @@
     const pt = (x, z) => P(x, z).map((v) => v.toFixed(1)).join(",");
     const defs = s("defs", null,
       s("radialGradient", { id: "fan-glow", cx: O[0], cy: O[1], r: 420, gradientUnits: "userSpaceOnUse" },
-        s("stop", { offset: "0", "stop-color": "#f6d543", "stop-opacity": ".22" }), s("stop", { offset: ".45", "stop-color": "#f3761b", "stop-opacity": ".08" }), s("stop", { offset: "1", "stop-color": "#8a226a", "stop-opacity": "0" })),
-      s("linearGradient", { id: "fan-beam", x1: "0", y1: "1", x2: "0", y2: "0" },
-        s("stop", { offset: "0", "stop-color": "#fff8d6", "stop-opacity": ".55" }), s("stop", { offset: "1", "stop-color": "#fff8d6", "stop-opacity": "0" })));
+        s("stop", { offset: "0", "stop-color": "#f6d543", "stop-opacity": ".22" }), s("stop", { offset: ".45", "stop-color": "#f3761b", "stop-opacity": ".08" }), s("stop", { offset: "1", "stop-color": "#8a226a", "stop-opacity": "0" })));
     svg.append(defs);
     const half = (50 * Math.PI) / 180, zmax = 4.4;
     svg.append(s("path", { d: `M${pt(0, 0)} L${pt(-Math.tan(half) * zmax, zmax)} L${pt(Math.tan(half) * zmax, zmax)} Z`, fill: "url(#fan-glow)" }));
@@ -964,7 +985,6 @@
     });
     EDGES.forEach((e) => svg.append(s("line", { class: "fan-edge", x1: O[0], y1: O[1], x2: P(Math.sin(e) * 4.6, Math.cos(e) * 4.6)[0], y2: P(Math.sin(e) * 4.6, Math.cos(e) * 4.6)[1] })));
     // the sweeping beam and the robot
-    if (!reduced) svg.append(s("path", { class: "fan-beam", d: `M${O[0]},${O[1]} L${O[0] - 14},${O[1] - 400} L${O[0] + 14},${O[1] - 400} Z`, fill: "url(#fan-beam)" }));
     svg.append(s("path", { d: `M${O[0]} ${O[1] - 12} l-8 16 h16 z`, fill: "#f6d543" }));
     svg.append(s("text", { x: O[0], y: O[1] + 24, "text-anchor": "middle", text: "free floor per sector, from DA3 depth" }));
   }
@@ -974,21 +994,17 @@
   initCopy();
   initKPIs();
   initField();
-  Promise.all([getJSON("data/featured.json"), getJSON("data/runs.json"), getJSON("data/stats.json")]).then(([featured, runs, stats]) => {
-    featured.forEach((r) => { r.N = r.frames.length; r.name = typeName(r.target); }); // cheap; the cells are decoded on first use
+  getJSON("data/featured.json").then((featured) => {
+    featured.forEach((r) => { r.name = typeName(r.target); });
     const byId = Object.fromEntries(featured.map((r) => [r.id, r]));
     const featuredIds = {};
     featured.forEach((r) => { featuredIds[SUBSETS.findIndex((x) => x[0] === r.subset) + ":" + r.episode] = r.id; });
-    initFan(byId.pasta.frames[0]);
-    initHero(byId.pasta);
+    loadFrames(byId.pasta).then(() => { initFan(byId.pasta.frames[0]); initHero(byId.pasta); }).catch(loadError);
     let theater = null;
     const theaterNow = () => theater || (theater = initTheater(featured));
-    nearView($("#anatomy"), () => initAnatomy(byId));
+    nearView($("#anatomy"), () => Promise.all(["pasta", "laptop", "phone", "pot"].map((id) => loadFrames(byId[id]))).then(() => initAnatomy(byId)).catch(loadError));
     nearView($("#theater"), theaterNow);
-    nearView($("#atlas"), () => initAll(runs, featuredIds, { play: (id) => theaterNow().play(id) }));
-    nearView($("#latency"), () => initLatency(stats));
-  }).catch((err) => {
-    console.error(err);
-    $$("#hero, #anatomy, #theater").forEach((el) => el.prepend(h("p", { class: "cell-note", text: "The recorded runs could not be loaded: " + err.message })));
-  });
+    nearView($("#atlas"), () => getJSON("data/runs.json").then((runs) => initAll(runs, featuredIds, { play: (id) => theaterNow().play(id) })).catch(loadError));
+    nearView($("#latency"), () => getJSON("data/stats.json").then(initLatency).catch(loadError));
+  }).catch(loadError);
 })();
