@@ -65,7 +65,6 @@ a { color: var(--accent-ink); text-underline-offset: 3px; text-decoration-thickn
 button { font: inherit; color: inherit; }
 code { font: 400 .9em/1 var(--mono); }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
-.nw { white-space: nowrap; }
 .muted { color: var(--muted); }
 .wrap { max-width: var(--wrap); margin: 0 auto; padding-inline: 28px; }
 @media (max-width: 560px) { .wrap { padding-inline: 16px; } }
