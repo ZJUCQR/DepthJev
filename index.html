@@ -3,24 +3,24 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>DepthJev</title>
-<meta name="description" content="DepthJev turns metric depth and detections into text facts. Its decision model never sees the image and still reaches 46.7% on all 300 EB-Navigation episodes.">
+<title>GeoLingo</title>
+<meta name="description" content="GeoLingo turns metric depth and detections into text facts. Its decision model never sees the image and still reaches 46.7% on all 300 EB-Navigation episodes.">
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://zjucqr.github.io/DepthJev/">
-<meta property="og:title" content="DepthJev: Turning Depth into Text for Embodied Navigation">
+<meta property="og:url" content="https://zjucqr.github.io/GeoLingo/">
+<meta property="og:title" content="GeoLingo: Translating Geometry into Language for Embodied Navigation">
 <meta property="og:description" content="46.7% on all 300 EB-Navigation episodes with a decision model that reads only text.">
-<meta property="og:image" content="https://zjucqr.github.io/DepthJev/media/og.jpg">
+<meta property="og:image" content="https://zjucqr.github.io/GeoLingo/media/og.jpg">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#060912">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="preload" href="assets/fonts/inter.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/sora.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="data/featured.json?v=20261010d" as="fetch" crossorigin>
-<link rel="preload" href="data/frames/pasta.json?v=20261010d" as="fetch" crossorigin>
+<link rel="preload" href="data/featured.json?v=20261010e" as="fetch" crossorigin>
+<link rel="preload" href="data/frames/pasta.json?v=20261010e" as="fetch" crossorigin>
 <link rel="preload" href="media/pasta/00.webp" as="image">
 <link rel="preload" href="media/pasta/00-d.webp" as="image">
-<link rel="stylesheet" href="assets/site.css?v=20261010d">
-<script>try { var t = localStorage.getItem("depthjev-theme"); if (t === "light" || t === "dark") document.documentElement.dataset.theme = t; } catch (e) {}</script>
+<link rel="stylesheet" href="assets/site.css?v=20261010e">
+<script>try { var t = localStorage.getItem("geolingo-theme"); if (t === "light" || t === "dark") document.documentElement.dataset.theme = t; } catch (e) {}</script>
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -57,13 +57,13 @@
 
 <div class="topbar" id="topbar">
   <div class="wrap topbar-in">
-    <a class="brand" href="#top" aria-label="DepthJev, back to top"><svg aria-hidden="true"><use href="#i-logo"/></svg>DepthJev</a>
+    <a class="brand" href="#top" aria-label="GeoLingo, back to top"><svg aria-hidden="true"><use href="#i-logo"/></svg>GeoLingo</a>
     <nav aria-label="Sections">
       <a href="#method">Method</a><a href="#runs">Runs</a><a href="#all">Results</a><a href="#cite" class="nav-2">Cite</a>
     </nav>
     <div class="topbar-actions">
       <button class="icon-btn" id="theme" type="button" aria-label="Switch between light and dark"><svg class="i-sun"><use href="#i-sun"/></svg><svg class="i-moon"><use href="#i-moon"/></svg></button>
-      <a class="icon-btn gh" href="https://github.com/ZJUCQR/DepthJev" aria-label="DepthJev on GitHub"><svg><use href="#i-github"/></svg><span>GitHub</span></a>
+      <a class="icon-btn gh" href="https://github.com/ZJUCQR/GeoLingo" aria-label="GeoLingo on GitHub"><svg><use href="#i-github"/></svg><span>GitHub</span></a>
     </div>
   </div>
 </div>
@@ -75,12 +75,12 @@
     <div class="hero-fan" aria-hidden="true"><svg id="fan" viewBox="0 0 600 440"></svg><i class="fan-beam"></i></div>
     <div class="hero-text">
       <p class="chip-row"><span class="chip"><i class="pulse"></i>EB-Navigation · 300 episodes</span><span class="chip ghost">Text-only decision model</span></p>
-      <h1>Depth<span class="jev">Jev</span></h1>
-      <p class="subtitle">Turning depth into text for embodied&nbsp;navigation</p>
+      <h1>Geo<span class="accent">Lingo</span></h1>
+      <p class="subtitle">Translating geometry into language for embodied&nbsp;navigation</p>
       <p class="lede">The decision model never sees a pixel. Every frame becomes metric depth and a target box, the geometry becomes a few lines of text in metres, and Jev picks the next move from that text alone. It succeeds in <b>46.7%</b> of all 300 EB-Navigation&nbsp;episodes.</p>
       <div class="links">
         <a class="btn primary" href="#runs"><svg><use href="#i-play"/></svg>Watch a run</a>
-        <a class="btn glass" href="https://github.com/ZJUCQR/DepthJev"><svg><use href="#i-github"/></svg>Code</a>
+        <a class="btn glass" href="https://github.com/ZJUCQR/GeoLingo"><svg><use href="#i-github"/></svg>Code</a>
         <a class="btn glass" href="#all">Results</a>
         <a class="btn glass" href="#cite">BibTeX</a>
       </div>
@@ -138,8 +138,8 @@
   <div class="wrap">
     <header class="sec-head"><span class="sec-num" aria-hidden="true">01</span><div><p class="kicker">Method</p><h2>From a frame to a paragraph</h2><p class="sec-lede">Each step runs through three stages, and each stage is one sub-package of the code. Perception measures the room in metres, the language layer writes the measurements down, and Jev, a decision model that answers typed questions with probabilities, picks one of eight&nbsp;actions.</p></div></header>
     <figure class="pipeline-fig">
-      <div class="paper"><img src="media/how-it-works.webp" width="2400" height="961" loading="lazy" alt="DepthJev pipeline: the RGB observation goes to Depth Anything 3 for metric depth and to OWLv2 for target detection, the local geometry becomes text facts together with the instruction, Jev gives a probability for each of the eight actions, and the chosen action leads to the next observation"></div>
-      <figcaption>One step of DepthJev. Depth Anything 3 and OWLv2 turn the RGB observation into metric depth and a target box, the local geometry becomes text facts next to the instruction, and Jev gives a probability for each of the eight actions. The chosen action produces the next observation.</figcaption>
+      <div class="paper"><img src="media/how-it-works.webp" width="2400" height="961" loading="lazy" alt="GeoLingo pipeline: the RGB observation goes to Depth Anything 3 for metric depth and to OWLv2 for target detection, the local geometry becomes text facts together with the instruction, Jev gives a probability for each of the eight actions, and the chosen action leads to the next observation"></div>
+      <figcaption>One step of GeoLingo. Depth Anything 3 and OWLv2 turn the RGB observation into metric depth and a target box, the local geometry becomes text facts next to the instruction, and Jev gives a probability for each of the eight actions. The chosen action produces the next observation.</figcaption>
     </figure>
     <ol class="bento">
       <li class="stage st-perc">
@@ -280,12 +280,12 @@
     <div class="foot-grid">
       <div>
         <p class="kicker">Cite</p>
-        <h2 class="foot-title">Use DepthJev in your work</h2>
-        <div class="bib"><div class="codebox-head"><span>BibTeX</span><button class="copy" type="button" data-copy="bibtex">Copy</button></div><pre id="bibtex">@misc{depthjev2026,
-  title        = {DepthJev: Turning Depth into Text for Embodied Navigation},
+        <h2 class="foot-title">Use GeoLingo in your work</h2>
+        <div class="bib"><div class="codebox-head"><span>BibTeX</span><button class="copy" type="button" data-copy="bibtex">Copy</button></div><pre id="bibtex">@misc{geolingo2026,
+  title        = {GeoLingo: Translating Geometry into Language for Embodied Navigation},
   author       = {ZJUCQR},
   year         = {2026},
-  howpublished = {\url{https://github.com/ZJUCQR/DepthJev}}
+  howpublished = {\url{https://github.com/ZJUCQR/GeoLingo}}
 }</pre></div>
       </div>
       <div class="foot-side">
@@ -299,12 +299,12 @@
         </ul>
       </div>
     </div>
-    <p class="provenance">All DepthJev numbers come from one full EB-Navigation run (300 episodes) on an H100. Frames, boxes, facts and Jev's probabilities are the recorded ones. The depth maps shown here were recomputed on CPU with DepthJev's own DA3 pipeline and agree with the recorded free-space measurements within 2&nbsp;cm. Top-down paths are rebuilt from the actions on AI2-THOR's 0.1&nbsp;m grid and reproduce the simulator's distance to the target at every step.</p>
-    <p class="foot-links"><a class="brand" href="#top"><svg aria-hidden="true"><use href="#i-logo"/></svg>DepthJev</a><span>Apache-2.0</span><a href="https://github.com/ZJUCQR/DepthJev"><svg><use href="#i-github"/></svg>ZJUCQR/DepthJev</a></p>
+    <p class="provenance">All GeoLingo numbers come from one full EB-Navigation run (300 episodes) on an H100. Frames, boxes, facts and Jev's probabilities are the recorded ones. The depth maps shown here were recomputed on CPU with GeoLingo's own DA3 pipeline and agree with the recorded free-space measurements within 2&nbsp;cm. Top-down paths are rebuilt from the actions on AI2-THOR's 0.1&nbsp;m grid and reproduce the simulator's distance to the target at every step.</p>
+    <p class="foot-links"><a class="brand" href="#top"><svg aria-hidden="true"><use href="#i-logo"/></svg>GeoLingo</a><span>Apache-2.0</span><a href="https://github.com/ZJUCQR/GeoLingo"><svg><use href="#i-github"/></svg>ZJUCQR/GeoLingo</a></p>
   </div>
 </footer>
 
 <div class="tip" id="tip" role="tooltip" hidden></div>
-<script src="assets/site.js?v=20261010d" defer></script>
+<script src="assets/site.js?v=20261010e" defer></script>
 </body>
 </html>

@@ -1,4 +1,4 @@
-/* DepthJev project page.
+/* GeoLingo project page.
    data/featured.json: six recorded runs, every step with the facts Jev read, its answer, the OWLv2 box, the exact pose and
    top-down cells from the depth map. data/runs.json: all 300 runs. data/stats.json: latency and tokens from the server logs. */
 (function () {
@@ -76,7 +76,7 @@
   themeBtn.addEventListener("click", () => {
     const next = isDark() ? "light" : "dark";
     rootEl.dataset.theme = next;
-    try { localStorage.setItem("depthjev-theme", next); } catch (e) { /* storage may be unavailable */ }
+    try { localStorage.setItem("geolingo-theme", next); } catch (e) { /* storage may be unavailable */ }
     themeChanged();
   });
   matchMedia("(prefers-color-scheme: dark)").addEventListener("change", themeChanged);

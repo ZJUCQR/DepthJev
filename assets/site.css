@@ -3,7 +3,7 @@
 @font-face { font-family: "JetBrains Mono"; font-style: normal; font-weight: 400 500; font-display: swap; src: url("fonts/jetbrains-mono.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
 @font-face { font-family: "Sora"; font-style: normal; font-weight: 400 700; font-display: swap; src: url("fonts/sora.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
 
-/* DepthJev project page. Light and dark themes share one set of roles; the hero and the footer are always "night". */
+/* GeoLingo project page. Light and dark themes share one set of roles; the hero and the footer are always "night". */
 :root {
   color-scheme: light;
   --bg: #f4f6fa;
@@ -126,8 +126,8 @@ code { font: 400 .9em/1 var(--mono); }
 .pulse::after { content: ""; position: absolute; inset: 0; border-radius: 50%; background: rgba(243, 118, 27, .6); animation: pulse 2.4s infinite; will-change: transform, opacity; }
 @keyframes pulse { 0% { transform: scale(1); opacity: .8; } 70% { transform: scale(3.4); opacity: 0; } 100% { transform: scale(3.4); opacity: 0; } }
 h1 { margin: 22px 0 0; font: 700 clamp(64px, 12vw, 148px)/.92 var(--display); letter-spacing: -.045em; }
-h1 .jev { background: linear-gradient(100deg, #f6d543 0%, #f3761b 38%, #da4e3c 64%, #b43359 100%); -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 6px 34px rgba(243, 118, 27, .35)); }
-.subtitle { margin: 18px 0 0; font: 500 clamp(20px, 2.6vw, 30px)/1.25 var(--display); letter-spacing: -.015em; color: #f2f4f8; }
+h1 .accent { background: linear-gradient(100deg, #f6d543 0%, #f3761b 38%, #da4e3c 64%, #b43359 100%); -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 6px 34px rgba(243, 118, 27, .35)); }
+.subtitle { margin: 18px 0 0; font: 500 clamp(19px, 1.8vw, 25px)/1.25 var(--display); letter-spacing: -.015em; color: #f2f4f8; }
 .lede { margin: 18px 0 0; max-width: 64ch; color: var(--ink-2); font-size: 17px; text-wrap: pretty; }
 .lede b { color: #fff; font-weight: 600; }
 .links { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 28px; }
