@@ -33,26 +33,10 @@
 
 ## ✨ Highlights
 
-- 📈 **Strong without pixels.** 46.7% success on all 300 EB-Navigation episodes, above Claude-3.5-Sonnet (44.7%) and 29.3 points above text-only GPT-4o (17.4%) as reported by EmbodiedBench.
-- 🧭 **Holds up on long horizons.** 41.7% on `long_horizon`, second only to GPT-4o (55.0%); Claude-3.5-Sonnet reaches 26.7% and Gemini-2.0-flash 13.3%.
+- 📈 **Strong without pixels.** 46.7% success on all 300 EB-Navigation episodes, with a decision model that never sees the image.
+- 🧭 **Holds up on long horizons.** 41.7% on `long_horizon`, where the start pose is turned around and the target usually begins behind the robot.
 - 📏 **Metric grounding.** Free space in five sectors, a collision check for the next 0.25 m step and the target distance all come from monocular metric depth, so Jev reasons in metres, not pixels.
 - ⚡ **Fast.** 0.76 s per step on one H100: DA3 0.15 s, OWLv2 0.22 s, Jev 0.34 s.
-
-### 🏆 Where it stands
-
-Success rate (%) on EB-Navigation. DepthJev's decision model reads only text; every baseline except text-only GPT-4o also sees the image.
-
-| Agent | Decision model reads | Avg | Base | Common | Complex | Visual | Long |
-| --- | --- | :---: | :---: | :---: | :---: | :---: | :---: |
-| GPT-4o | image + text | **57.7** | 55.0 | 60.0 | **58.3** | **60.0** | **55.0** |
-| Gemini-2.0-flash | image + text | 48.7 | 63.3 | **65.0** | 50.0 | 51.7 | 13.3 |
-| **DepthJev (ours)** | **text facts only** | **46.7** | **53.3** | **51.7** | **50.0** | **36.7** | **41.7** |
-| Claude-3.5-Sonnet | image + text | 44.7 | **66.7** | 51.7 | 41.7 | 36.7 | 26.7 |
-| InternVL2.5-78B | image + text | 30.7 | 36.7 | 38.3 | 33.3 | 21.7 | 23.3 |
-| Qwen2-VL-72B | image + text | 21.2 | 26.7 | 30.0 | 28.3 | 16.0 | 5.0 |
-| GPT-4o | text only | 17.4 | 21.7 | 21.7 | 26.7 | 16.7 | 0.0 |
-
-<sub>Baselines are from Table 3 of the EmbodiedBench paper; bold marks DepthJev and the best baseline per column. The <a href="https://zjucqr.github.io/DepthJev/">project page</a> compares all 15 models.</sub>
 
 <a id="how-it-works"></a>
 
