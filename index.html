@@ -15,7 +15,7 @@
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="preload" href="assets/fonts/inter.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/sora.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="assets/site.css?v=20261010b">
+<link rel="stylesheet" href="assets/site.css?v=20261010c">
 <script>try { var t = localStorage.getItem("depthjev-theme"); if (t === "light" || t === "dark") document.documentElement.dataset.theme = t; } catch (e) {}</script>
 </head>
 <body>
@@ -84,7 +84,6 @@
 
     <figure class="device" id="hero" aria-labelledby="hero-cap">
       <div class="device-head">
-        <span class="fig-tag">Fig. 1</span>
         <p class="device-title" id="hero-cap"><span class="device-label">A recorded episode, as Jev sees it</span><span class="hero-instr" id="hero-instr"></span></p>
         <button class="pill-btn" id="hero-play" type="button" aria-pressed="true"><svg class="i-pause"><use href="#i-pause"/></svg><svg class="i-play"><use href="#i-play"/></svg><span>Pause</span></button>
       </div>
@@ -119,11 +118,14 @@
       </div>
     </figure>
 
-    <div class="kpis" role="list">
-      <div class="kpi" role="listitem"><b data-count="46.7" data-dec="1" data-suffix="%">46.7%</b><span>success on all 300 EB&#8209;Navigation episodes</span></div>
-      <div class="kpi" role="listitem"><b>263<small>/300</small></b><span>instructions read as the right object type</span></div>
-      <div class="kpi" role="listitem"><b data-count="0" data-dec="0">0</b><span>images seen by Jev, the decision model: it reads only text facts, about 1.7k tokens per step</span></div>
-      <div class="kpi" role="listitem"><b data-count="0.76" data-dec="2" data-suffix=" s">0.76 s</b><span>per step on one H100: depth, detection, decision</span></div>
+    <div class="highlights">
+      <p class="kicker">Highlights</p>
+      <div class="kpis" role="list">
+        <div class="kpi" role="listitem"><b data-count="46.7" data-dec="1" data-suffix="%">46.7%</b><strong>Strong without pixels</strong><span>on all 300 EB-Navigation episodes, with a decision model that never sees the image</span></div>
+        <div class="kpi" role="listitem"><b data-count="41.7" data-dec="1" data-suffix="%">41.7%</b><strong>Holds up on long horizons</strong><span>on long-horizon episodes, where the target usually starts behind the robot</span></div>
+        <div class="kpi" role="listitem"><b>5<small> sectors</small></b><strong>Metric grounding</strong><span>free space, the next step's collision check and the target distance, all in metres from DA3 depth</span></div>
+        <div class="kpi" role="listitem"><b data-count="0.76" data-dec="2" data-suffix=" s">0.76 s</b><strong>Fast</strong><span>per step on one H100: DA3 0.15 s, OWLv2 0.22 s, Jev 0.34 s</span></div>
+      </div>
     </div>
   </div>
 </header>
@@ -133,7 +135,7 @@
     <header class="sec-head"><span class="sec-num" aria-hidden="true">01</span><div><p class="kicker">Method</p><h2>From a frame to a paragraph</h2><p class="sec-lede">Each step runs through three stages, and each stage is one sub-package of the code. Perception measures the room in metres, the language layer writes the measurements down, and Jev, a decision model that answers typed questions with probabilities, picks one of eight&nbsp;actions.</p></div></header>
     <figure class="pipeline-fig">
       <div class="paper"><img src="media/how-it-works.webp" width="2400" height="961" loading="lazy" alt="DepthJev pipeline: the RGB observation goes to Depth Anything 3 for metric depth and to OWLv2 for target detection, the local geometry becomes text facts together with the instruction, Jev gives a probability for each of the eight actions, and the chosen action leads to the next observation"></div>
-      <figcaption>One step of DepthJev. Depth Anything 3 and OWLv2 turn the RGB observation into metric depth and a target box; the local geometry becomes text facts next to the instruction; Jev answers with a probability for each of the eight actions, and the chosen one produces the next&nbsp;observation.</figcaption>
+      <figcaption>One step of DepthJev. Depth Anything 3 and OWLv2 turn the RGB observation into metric depth and a target box, the local geometry becomes text facts next to the instruction, and Jev gives a probability for each of the eight actions. The chosen action produces the next observation.</figcaption>
     </figure>
     <ol class="bento">
       <li class="stage st-perc">
@@ -155,7 +157,6 @@
 
     <figure class="card anatomy" id="anatomy" aria-labelledby="anat-cap">
       <div class="anat-head">
-        <span class="fig-tag">Fig. 2</span>
         <div class="tabs" role="tablist" aria-label="Recorded steps" id="anat-tabs"></div>
       </div>
       <div class="anat-grid">
@@ -193,7 +194,7 @@
 
 <section class="sec" id="runs">
   <div class="wrap">
-    <header class="sec-head"><span class="sec-num" aria-hidden="true">02</span><div><p class="kicker">Examples</p><h2>Six runs, replayed step by step</h2><p class="sec-lede">The frame the robot saw, the depth DA3 measured, the box OWLv2 found, the facts Jev read and the action it chose, all recorded during the full evaluation. The top-down path is rebuilt from the actions and matches the simulator's distance to the target at every step. Runs play on their own; click any action to&nbsp;inspect&nbsp;it.</p></div></header>
+    <header class="sec-head"><span class="sec-num" aria-hidden="true">02</span><div><p class="kicker">Examples</p><h2>Six runs, replayed step by step</h2><p class="sec-lede">The frame the robot saw, the depth DA3 measured, the box OWLv2 found, the facts Jev read and the action it chose, all recorded during the full evaluation. The top-down path is rebuilt from the actions and matches the simulator's distance to the target at every step. Runs play on their own, and clicking an action shows that step.</p></div></header>
     <div class="cases" id="cases" role="group" aria-label="Recorded runs"></div>
     <div class="theater card" id="theater">
       <div class="th-stage">
@@ -300,6 +301,6 @@
 </footer>
 
 <div class="tip" id="tip" role="tooltip" hidden></div>
-<script src="assets/site.js?v=20261010b" defer></script>
+<script src="assets/site.js?v=20261010c" defer></script>
 </body>
 </html>

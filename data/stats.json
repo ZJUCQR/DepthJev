@@ -1,1 +1,1 @@
-{"single":{"steps":1833,"depth":0.146,"detect":0.218,"jev":0.337,"step":0.762,"tokens":1642},"shared":{"steps":2971,"depth":0.267,"detect":0.316,"jev":0.376,"step":1.057,"tokens":1678},"all":{"steps":4804,"depth":0.22,"detect":0.279,"jev":0.361,"step":0.944,"tokens":1664}}
+{"single":{"steps":1833,"depth":0.146,"detect":0.218,"jev":0.337,"step":0.762},"shared":{"steps":2971,"depth":0.267,"detect":0.316,"jev":0.376,"step":1.057}}

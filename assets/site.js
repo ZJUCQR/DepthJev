@@ -372,7 +372,7 @@
     { id: "pasta", k: 0, tab: "Clear path", rule: 2, text: "The pot sits on the stove at the far end of the kitchen: center sector, over 2 m. The center has more than 2 m of free floor and the next 0.25 m step is clear, so Jev moves ahead." },
     { id: "laptop", k: 0, tab: "Blocked", rule: 3, text: "A wall edge fills four sectors at under 0.5 m and blocks the next step. The laptop is on the table in the far-left sector, where moving ahead would lose it from view, so Jev sidesteps left." },
     { id: "phone", k: 0, tab: "Searching", rule: 4, text: "This long-horizon episode starts facing a wall: every sector is under 0.5 m and the cell phone is not in view. With the target out of view, Jev also says where it probably is, and turns to search." },
-    { id: "pot", k: 1, tab: "Looking down", rule: 6, text: "After one turn the stove is in view, but OWLv2 finds no pot at eye level. Jev places the target below the view, so with a level camera it looks down; one step later the pot is detected 30 degrees down." },
+    { id: "pot", k: 1, tab: "Looking down", rule: 6, text: "After one turn the stove is in view, but OWLv2 finds no pot at eye level. Jev places the target below the view, so with a level camera it looks down. One step later the pot is detected 30 degrees down." },
     { id: "pasta", k: 7, tab: "Last metres", rule: 11, text: "The pot is 0.5 to 1 m away in the left sector. The episode has not ended, so the facts add a note that the true distance is still over 1 m. Jev sidesteps toward it, and the next step ends the episode." },
   ];
 
@@ -587,7 +587,7 @@
       } else {
         const fa = f.facts, tg = fa.target;
         const where = { left: "to the left", right: "to the right", behind: "behind the robot", ahead: "ahead, out of detection range", above: "above the view", below: "below the view" };
-        const what = tg.visible ? [cap(run.name) + " in the ", h("b", { text: tg.sector.replace("_", " ") }), " sector, " + tg.distance] : [cap(run.name) + " ", h("b", { text: "not in view" }), f.dir ? `; Jev guesses it is ${where[f.dir] || f.dir}` : ""];
+        const what = tg.visible ? [cap(run.name) + " in the ", h("b", { text: tg.sector.replace("_", " ") }), " sector, " + tg.distance] : [cap(run.name) + " ", h("b", { text: "not in view" }), f.dir ? `, and Jev guesses it is ${where[f.dir] || f.dir}` : ""];
         capEl.replaceChildren(...what, `. Center free ${fa.free_distance_ahead_by_sector.center}, next step ${fa.move_check.move_ahead}. Jev: `, h("b", { text: f.action }), ` (${f.p[f.action].toFixed(2)})` + (f.ok ? "." : ", which the simulator rejects: the way is blocked."));
         probs.set(f.p, f.action);
       }
@@ -725,7 +725,7 @@
         h("img", { src: `media/thumbs/${r.th}.webp`, alt: "" }),
         h("div", { class: "tl", text: `${SUBSETS[r.s][1]} · FloorPlan${r.sc} · episode ${r.e}` }),
         h("p", { class: "tq", text: "“" + r.i + "”" }),
-        h("div", { class: "tl", text: `Target ${typeName(r.t)}; Jev read ${typeName(r.rt || "?")}${right ? "" : " (wrong type)"}` }),
+        h("div", { class: "tl", text: `Target ${typeName(r.t)}, Jev read ${typeName(r.rt || "?")}${right ? "" : " (wrong type)"}` }),
         h("div", { class: "tr " + (r.ok ? "ok" : "no") }, icon(r.ok ? "i-check" : "i-x"), r.ok ? `Reached in ${r.n} steps, ${r.dist[r.dist.length - 1].toFixed(2)} m away` : `Not reached: ${r.dist[r.dist.length - 1].toFixed(2)} m away after ${r.n} steps`),
         featuredIds[r.s + ":" + r.e] ? h("div", { class: "tl", text: "Click to replay it above." }) : null,
       ], x, y);
@@ -981,8 +981,6 @@
     featured.forEach((r) => { featuredIds[SUBSETS.findIndex((x) => x[0] === r.subset) + ":" + r.episode] = r.id; });
     initFan(byId.pasta.frames[0]);
     initHero(byId.pasta);
-    const kpi = $$(".kpi span")[2];
-    if (kpi && stats.all) kpi.textContent = `images seen by Jev, the decision model: it reads only text facts, about ${(stats.all.tokens / 1000).toFixed(1)}k tokens per step`;
     let theater = null;
     const theaterNow = () => theater || (theater = initTheater(featured));
     nearView($("#anatomy"), () => initAnatomy(byId));
